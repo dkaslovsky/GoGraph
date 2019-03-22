@@ -1,115 +1,119 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
-type Node struct {
-	ID        string
-	EdgesFrom []*Node
-	EdgesTo   []*Node
-}
+type graph map[string]map[string]float64
 
-type Edge struct {
-	FromNode string
-	ToNode   string
-}
-
-type Graph struct {
-	ID    string
-	Nodes map[string]*Node
-}
-
-func newGraph(id string) *Graph {
-	return &Graph{
-		ID:    id,
-		Nodes: map[string]*Node{},
+func (g graph) fromFile(filepath string) error {
+	file, err := os.Open(filepath)
+	if err != nil {
+		return err
 	}
-}
+	defer file.Close()
 
-func newNode(id string) *Node {
-	return &Node{
-		ID:        id,
-		EdgesFrom: []*Node{},
-		EdgesTo:   []*Node{},
-	}
-}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, " ")
+		if len(parts) < 2 {
+			continue
+		}
 
-func newEdge(from, to *Node) *Edge {
-	return &Edge{
-		FromNode: from.ID,
-		ToNode:   to.ID,
-	}
-}
+		from := parts[0]
+		to := parts[1]
+		if from == "" || to == "" {
+			continue
+		}
 
-func (g Graph) AddEdge(from, to *Node) {
-	if from.ID == to.ID {
-		return
-	}
-	g.addNode(from)
-	g.addNode(to)
-	from.EdgesTo = append(from.EdgesTo, to)
-	to.EdgesFrom = append(to.EdgesFrom, from)
-}
-
-func (g Graph) addNode(node *Node) {
-	_, ok := g.Nodes[node.ID]
-	if !ok {
-		g.Nodes[node.ID] = node
-	}
-}
-
-func (g Graph) GetEdges() []*Edge {
-	var edges []*Edge
-	for _, node := range g.Nodes {
-		for _, fromNode := range node.EdgesFrom {
-			edges = append(edges, newEdge(fromNode, node))
+		if len(parts) == 2 {
+			g.addEdge(from, to)
+		} else {
+			weight, err := strconv.ParseFloat(parts[2], 64)
+			if err != nil {
+				return err
+			}
+			g.addEdge(from, to, weight)
 		}
 	}
-	return edges
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (e Edge) print() {
-	fmt.Println(e.FromNode, "-->", e.ToNode)
+func (g graph) addEdge(from string, to string, weight ...float64) {
+	wgt := 1.0
+	if len(weight) > 0 {
+		wgt = weight[0]
+	}
+
+	toNodes, ok := g[from]
+	if !ok {
+		g[from] = map[string]float64{to: wgt}
+		return
+	}
+	_, ok = toNodes[to]
+	if ok {
+		// Should return error
+		fmt.Printf("Error: edge (%s, %s) already in graph", from, to)
+		return
+	}
+	toNodes[to] = wgt
 }
 
-func (n Node) getOutDegree() int {
-	return len(n.EdgesTo)
+func (g graph) getNodes() (nodes []string) {
+	for node := range g {
+		nodes = append(nodes, node)
+	}
+	return nodes
 }
 
-func (n Node) getInDegree() int {
-	return len(n.EdgesFrom)
+func (g graph) getNeighbors(node string) (nodes []string) {
+	nbrs, ok := g[node]
+	if !ok {
+		// Error if node not in graph?
+		return nodes
+	}
+	for n := range nbrs {
+		nodes = append(nodes, n)
+	}
+	return nodes
+}
+
+func (g graph) getDegree(node string) (degree float64) {
+	nbrs, ok := g[node]
+	if !ok {
+		// Error if node not in graph?
+		return degree
+	}
+	for n := range nbrs {
+		degree += nbrs[n]
+	}
+	return degree
 }
 
 func main() {
+	g := graph{}
+	fmt.Printf("Nodes in graph: %v\n", g.getNodes())
 
-	n1 := newNode("A")
-	n2 := newNode("B")
-	n3 := newNode("C")
-
-	g := newGraph("myGraph")
-	g.AddEdge(n1, n2)
-	g.AddEdge(n3, n1)
-	g.AddEdge(n1, n3)
-	g.AddEdge(n2, n2)
-	fmt.Println("Graph", g.ID, "has", len(g.Nodes), "nodes")
-
-	fmt.Println("Node", n1.ID, "has in-degree", n1.getInDegree())
-	fmt.Println("Node", n1.ID, "has out-degree", n1.getOutDegree())
-
-	for _, node := range g.Nodes {
-		fmt.Println("Node", node.ID, "has edges to...")
-		for _, n := range node.EdgesTo {
-			fmt.Println("\t", n.ID)
-		}
-		fmt.Println("Node", node.ID, "has edges from...")
-		for _, n := range node.EdgesFrom {
-			fmt.Println("\t", n.ID)
-		}
+	err := g.fromFile("graph.txt")
+	if err != nil {
+		fmt.Printf("Error %v", err)
 	}
 
-	for _, edge := range g.GetEdges() {
-		edge.print()
-	}
+	fmt.Printf("Graph: %v\n", g)
+	fmt.Printf("Nodes in graph: %v\n", g.getNodes())
 
+	fmt.Printf("a's neighbors: %v\n", g.getNeighbors("a"))
+	fmt.Printf("x's neighbors: %v\n", g.getNeighbors("x"))
+
+	fmt.Printf("a's degree: %v\n", g.getDegree("a"))
+	fmt.Printf("x's degree: %v\n", g.getDegree("x"))
 }
