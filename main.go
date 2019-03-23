@@ -39,11 +39,24 @@ func main() {
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	}
-	g.PrintAdj()
 
 	fmt.Printf("Nodes in %s: %v\n", g.Name, g.GetNodes())
+	g.PrintAdj()
+	for _, node := range []string{"a", "c", "x"} {
+		printNbrs(g, node)
+		printOutDegree(g, node)
+		printInDegree(g, node)
+	}
 
-	for _, node := range []string{"a", "x"} {
+	fmt.Println()
+
+	n1 := "c"
+	n2 := "d"
+	fmt.Printf("Removing edge (%s, %s)", n1, n2)
+	g.RemoveEdge(n1, n2)
+	fmt.Printf("Nodes in %s: %v\n", g.Name, g.GetNodes())
+	g.PrintAdj()
+	for _, node := range []string{"a", "c", "x"} {
 		printNbrs(g, node)
 		printOutDegree(g, node)
 		printInDegree(g, node)

@@ -24,30 +24,6 @@ func NewDirGraph(name string) *DirGraph {
 	}
 }
 
-func (dg *DirGraph) PrintAdj() {
-	dg.PrintOutAdj()
-}
-
-func (dg *DirGraph) PrintOutAdj() {
-	for node := range dg.outAdj {
-		fmt.Printf("%s:\n", node)
-		adj := dg.outAdj[node]
-		for n := range adj {
-			fmt.Printf("  %s: %f\n", n, adj[n])
-		}
-	}
-}
-
-func (dg *DirGraph) PrintInAdj() {
-	for node := range dg.inAdj {
-		fmt.Printf("%s:\n", node)
-		adj := dg.inAdj[node]
-		for n := range adj {
-			fmt.Printf("  %s: %f\n", n, adj[n])
-		}
-	}
-}
-
 func (dg *DirGraph) FromFile(filepath string) error {
 	file, err := os.Open(filepath)
 	if err != nil {
@@ -107,9 +83,75 @@ func (dg *DirGraph) AddEdge(from string, to string, weight ...float64) {
 	}
 }
 
-func (dg *DirGraph) GetNodes() (nodes []string) {
+func (dg *DirGraph) RemoveEdge(from string, to string) {
+	toNodes, ok := dg.outAdj[from]
+	if ok {
+		delete(toNodes, to)
+	}
+	if len(toNodes) == 0 {
+		delete(dg.outAdj, from)
+	}
+
+	fromNodes, ok := dg.inAdj[to]
+	if ok {
+		delete(fromNodes, from)
+	}
+	if len(fromNodes) == 0 {
+		delete(dg.inAdj, to)
+	}
+}
+
+// this might not be right
+func (dg *DirGraph) RemoveNode(node string) {
+	toNodes, ok := dg.outAdj[node]
+	if !ok {
+		// delete all in neighbors and return
+		return
+	}
+	// remove all of the edges to node then delete the node key from outAdj
+	for n := range toNodes {
+		dg.RemoveEdge(n, node)
+	}
+	delete(dg.outAdj, node)
+}
+
+func (dg *DirGraph) PrintAdj() {
+	dg.PrintOutAdj()
+}
+
+func (dg *DirGraph) PrintOutAdj() {
 	for node := range dg.outAdj {
-		nodes = append(nodes, node)
+		fmt.Printf("%s:\n", node)
+		adj := dg.outAdj[node]
+		for n := range adj {
+			fmt.Printf("  %s: %f\n", n, adj[n])
+		}
+	}
+}
+
+func (dg *DirGraph) PrintInAdj() {
+	for node := range dg.inAdj {
+		fmt.Printf("%s:\n", node)
+		adj := dg.inAdj[node]
+		for n := range adj {
+			fmt.Printf("  %s: %f\n", n, adj[n])
+		}
+	}
+}
+
+func (dg *DirGraph) GetNodes() (nodes []string) {
+	set := map[string]struct{}{}
+	for node := range dg.outAdj {
+		if _, ok := set[node]; !ok {
+			set[node] = struct{}{}
+			nodes = append(nodes, node)
+		}
+	}
+	for node := range dg.inAdj {
+		if _, ok := set[node]; !ok {
+			set[node] = struct{}{}
+			nodes = append(nodes, node)
+		}
 	}
 	return nodes
 }
