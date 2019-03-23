@@ -1,119 +1,51 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strconv"
-	"strings"
+
+	"github.com/dkaslovsky/GoGraph/graph"
 )
 
-type graph map[string]map[string]float64
-
-func (g graph) fromFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Split(line, " ")
-		if len(parts) < 2 {
-			continue
-		}
-
-		from := parts[0]
-		to := parts[1]
-		if from == "" || to == "" {
-			continue
-		}
-
-		if len(parts) == 2 {
-			g.addEdge(from, to)
-		} else {
-			weight, err := strconv.ParseFloat(parts[2], 64)
-			if err != nil {
-				return err
-			}
-			g.addEdge(from, to, weight)
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (g graph) addEdge(from string, to string, weight ...float64) {
-	wgt := 1.0
-	if len(weight) > 0 {
-		wgt = weight[0]
-	}
-
-	toNodes, ok := g[from]
+func printNbrs(g *graph.DirGraph, node string) {
+	nbrs, ok := g.GetNeighbors(node)
 	if !ok {
-		g[from] = map[string]float64{to: wgt}
+		fmt.Printf("%s not found in %s\n", node, g.Name)
 		return
 	}
-	_, ok = toNodes[to]
-	if ok {
-		// Should return error
-		fmt.Printf("Error: edge (%s, %s) already in graph", from, to)
+	fmt.Printf("%s's neighbors: %v\n", node, nbrs)
+}
+
+func printOutDegree(g *graph.DirGraph, node string) {
+	d, ok := g.GetOutDegree(node)
+	if !ok {
+		fmt.Printf("%s not found in %s\n", node, g.Name)
 		return
 	}
-	toNodes[to] = wgt
+	fmt.Printf("%s's out degree: %f\n", node, d)
 }
 
-func (g graph) getNodes() (nodes []string) {
-	for node := range g {
-		nodes = append(nodes, node)
-	}
-	return nodes
-}
-
-func (g graph) getNeighbors(node string) (nodes []string) {
-	nbrs, ok := g[node]
+func printInDegree(g *graph.DirGraph, node string) {
+	d, ok := g.GetInDegree(node)
 	if !ok {
-		// Error if node not in graph?
-		return nodes
+		fmt.Printf("%s not found in %s\n", node, g.Name)
+		return
 	}
-	for n := range nbrs {
-		nodes = append(nodes, n)
-	}
-	return nodes
-}
-
-func (g graph) getDegree(node string) (degree float64) {
-	nbrs, ok := g[node]
-	if !ok {
-		// Error if node not in graph?
-		return degree
-	}
-	for n := range nbrs {
-		degree += nbrs[n]
-	}
-	return degree
+	fmt.Printf("%s's in degree: %f\n", node, d)
 }
 
 func main() {
-	g := graph{}
-	fmt.Printf("Nodes in graph: %v\n", g.getNodes())
-
-	err := g.fromFile("graph.txt")
+	g := graph.NewDirGraph("myGraph")
+	err := g.FromFile("graph.txt")
 	if err != nil {
-		fmt.Printf("Error %v", err)
+		fmt.Printf("Error %v\n", err)
 	}
+	g.PrintAdj()
 
-	fmt.Printf("Graph: %v\n", g)
-	fmt.Printf("Nodes in graph: %v\n", g.getNodes())
+	fmt.Printf("Nodes in %s: %v\n", g.Name, g.GetNodes())
 
-	fmt.Printf("a's neighbors: %v\n", g.getNeighbors("a"))
-	fmt.Printf("x's neighbors: %v\n", g.getNeighbors("x"))
-
-	fmt.Printf("a's degree: %v\n", g.getDegree("a"))
-	fmt.Printf("x's degree: %v\n", g.getDegree("x"))
+	for _, node := range []string{"a", "x"} {
+		printNbrs(g, node)
+		printOutDegree(g, node)
+		printInDegree(g, node)
+	}
 }
