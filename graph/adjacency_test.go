@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// any way to assert anything here?
+// What assertions can be made here?
 func TestPrint(t *testing.T) {
 	a := DirAdj{}
 	a.AddEdge("x", "y", 1)
@@ -73,7 +73,11 @@ func TestRemoveEdge(t *testing.T) {
 		a.RemoveEdge("x", n)
 	}
 	_, xExists = a["x"]
-	assert.False(t, xExists, "node x should no longer exist once all of its neighbors are removed")
+	assert.False(t, xExists, "node x should no longer be a key once all neighbors are removed")
+	// y should still have an edge to x
+	yNbrs, yExists := a["y"]
+	assert.True(t, yExists, "node y should still be a key")
+	assert.Contains(t, yNbrs, "x", "node x should still be a neighbor of node y")
 }
 
 func TestRemoveNode(t *testing.T) {

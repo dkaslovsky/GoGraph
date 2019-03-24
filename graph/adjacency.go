@@ -33,10 +33,14 @@ func (a DirAdj) RemoveEdge(from string, to string) {
 	delete(nbrs, to)
 	// delete from node if it no longer has neighbors
 	if len(nbrs) == 0 {
-		a.RemoveNode(from)
+		delete(a, from)
 	}
 }
 
+// RemoveNode removes a node from DirAdj
+// Note that this is an O(n) operation, so if an inverted index is available it will be
+// more efficient (i.e. O(k) where k is th number nodes for which node is a to-neighbor)
+// to use that structure to remove a node
 func (a DirAdj) RemoveNode(node string) {
 	delete(a, node)
 	for n := range a {
