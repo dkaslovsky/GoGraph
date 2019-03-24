@@ -16,12 +16,7 @@ func (a DirAdj) Print() {
 	}
 }
 
-func (a DirAdj) AddEdge(from string, to string, weight ...float64) {
-	wgt := 1.0
-	if len(weight) > 0 {
-		wgt = weight[0]
-	}
-
+func (a DirAdj) AddEdge(from string, to string, wgt float64) {
 	nbrs, ok := a[from]
 	if !ok {
 		a[from] = map[string]float64{to: wgt}
@@ -44,6 +39,9 @@ func (a DirAdj) RemoveEdge(from string, to string) {
 
 func (a DirAdj) RemoveNode(node string) {
 	delete(a, node)
+	for n := range a {
+		a.RemoveEdge(n, node)
+	}
 }
 
 func (a DirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
@@ -57,6 +55,22 @@ func (a DirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
 	return nbrs, true
 }
 
-func (a DirAdj) GetEdge() {
+func (a DirAdj) HasEdge(from string, to string) bool {
+	nbrs, ok := a[from]
+	if !ok {
+		return false
+	}
+	_, ok = nbrs[to]
+	if !ok {
+		return false
+	}
+	return true
+}
 
+func (a DirAdj) GetEdgeWeight(from string, to string) (weight float64, found bool) {
+	if a.HasEdge(from, to) {
+		w := a[from][to]
+		return w, true
+	}
+	return weight, false
 }

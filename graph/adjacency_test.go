@@ -10,9 +10,9 @@ import (
 // any way to assert anything here?
 func TestPrint(t *testing.T) {
 	a := DirAdj{}
-	a.AddEdge("x", "y")
-	a.AddEdge("x", "z")
-	a.AddEdge("y", "x")
+	a.AddEdge("x", "y", 1)
+	a.AddEdge("x", "z", 1)
+	a.AddEdge("y", "x", 1)
 	a.Print()
 }
 
@@ -20,7 +20,7 @@ func TestAddEdge(t *testing.T) {
 	a := DirAdj{}
 
 	// test adding edge with default weight
-	a.AddEdge("x", "y")
+	a.AddEdge("x", "y", 1)
 	xNbrs, xExists := a["x"]
 	assert.True(t, xExists, "node x should exist in adjacency")
 	assert.Len(t, xNbrs, 1, "node x should have 1 neighbor")
@@ -37,60 +37,107 @@ func TestAddEdge(t *testing.T) {
 
 func TestRemoveEdge(t *testing.T) {
 	a := DirAdj{}
-	a.AddEdge("x", "y")
-	a.AddEdge("x", "z")
-	a.AddEdge("y", "x")
-
-	// make a copy of a for testing
-	aOrig := DirAdj{}
-	for outerK, outerV := range a {
-		aOrig[outerK] = outerV
-	}
+	a.AddEdge("x", "y", 1)
+	a.AddEdge("x", "w", 1)
+	a.AddEdge("x", "z", 1)
+	a.AddEdge("y", "x", 1)
 
 	// test removing nonexistent edge from existing node
 	a.RemoveEdge("x", "foo")
 	xNbrs, xExists := a["x"]
 	assert.True(t, xExists, "node x should still exist in adjacency")
-	assert.Len(t, xNbrs, 2, "node x should still have 2 neighbors")
+	assert.Len(t, xNbrs, 3, "node x should still have 2 neighbors")
 	assert.Contains(t, xNbrs, "y", "y should still be neighbor of x")
+	assert.Contains(t, xNbrs, "w", "w should still be neighbor of x")
 	assert.Contains(t, xNbrs, "z", "z should still be neighbor of x")
 
 	// test removing nonexistent edge from nonexisting node
+	aOrig := DirAdj{}
+	for outerK, outerV := range a {
+		aOrig[outerK] = outerV
+	}
 	a.RemoveEdge("foo", "bar")
 	isEqual := reflect.DeepEqual(a, aOrig)
 	assert.True(t, isEqual, "adjacency should be unchanged")
 
 	// test removing existing edge
-	a.AddEdge("foo", "bar")
-	a.AddEdge("foo", "baz")
-	a.RemoveEdge("foo", "bar")
-	fooNbrs := a["foo"]
-	assert.Len(t, fooNbrs, 1, "node foo should have 1 remaining neighbor")
-	_, barExists := fooNbrs["bar"]
-	assert.False(t, barExists, "foo should no longer have bar as a neighbor")
-	_, bazExists := fooNbrs["baz"]
-	assert.True(t, bazExists, "foo should still have baz as a neighbor")
+	a.RemoveEdge("x", "w")
+	xNbrs = a["x"]
+	assert.Len(t, xNbrs, 2, "node x should have 2 remaining neighbors")
+	_, wExists := xNbrs["w"]
+	assert.False(t, wExists, "node x should no longer have w as a neighbor")
 
 	// test removing edge leaving no neighbors deletes the from node
-	a.RemoveEdge("foo", "baz")
-	fooNbrs, fooExists := a["foo"]
-	assert.False(t, fooExists, "node foo should no longer exist")
+	xNbrs = a["x"]
+	for n := range xNbrs {
+		a.RemoveEdge("x", n)
+	}
+	_, xExists = a["x"]
+	assert.False(t, xExists, "node x should no longer exist once all of its neighbors are removed")
+}
+
+func TestRemoveNode(t *testing.T) {
+	a := DirAdj{}
+	a.AddEdge("x", "y", 1)
+	a.AddEdge("x", "z", 1)
+	a.AddEdge("y", "x", 1)
+	a.AddEdge("y", "z", 1)
+	a.AddEdge("z", "x", 1)
+
+	a.RemoveNode("x")
+	// x and z should no longer exist
+	_, xExists := a["x"]
+	assert.False(t, xExists, "node x should no longer exist")
+	_, zExists := a["z"]
+	assert.False(t, zExists, "node z should no longer exist")
+	// y should not have an edge to x
+	yNbrs := a["y"]
+	assert.NotContains(t, yNbrs, "x", "node x should no longer be a neighbor of node y")
+
+	// test removing nonexistent node
+	aOrig := DirAdj{}
+	for outerK, outerV := range a {
+		aOrig[outerK] = outerV
+	}
+	a.RemoveNode("foo")
+	isEqual := reflect.DeepEqual(a, aOrig)
+	assert.True(t, isEqual, "adjacency should be unchanged")
 }
 
 func TestGetNeighbors(t *testing.T) {
 	a := DirAdj{}
-	a.AddEdge("x", "y")
-	a.AddEdge("x", "z")
-	a.AddEdge("y", "x")
+	a.AddEdge("x", "y", 1)
+	a.AddEdge("x", "z", 1)
+	a.AddEdge("y", "x", 1)
 
 	// test get neighbors for nonexistent node
-	_, ok := a.GetNeighbors("foo")
-	assert.False(t, ok, "node foo should not exist")
+	_, vExists := a.GetNeighbors("v")
+	assert.False(t, vExists, "node v should not exist")
 
 	// test get neighbors for existing node
-	xNbrs, ok := a.GetNeighbors("x")
-	assert.True(t, ok, "node x should have neighbors")
-	assert.Len(t, xNbrs, 2)
-	assert.Contains(t, xNbrs, "y")
-	assert.Contains(t, xNbrs, "z")
+	xNbrs, xExists := a.GetNeighbors("x")
+	assert.True(t, xExists, "node x should have neighbors")
+	assert.Len(t, xNbrs, 2, "node x should have 2 neighbors")
+	assert.Contains(t, xNbrs, "y", "node y should be a neighbor of node x")
+	assert.Contains(t, xNbrs, "z", "node z should be a neighbor of node x")
+}
+
+func TestHasEdge(t *testing.T) {
+	a := DirAdj{}
+	a.AddEdge("x", "y", 1)
+	assert.True(t, a.HasEdge("x", "y"), "edge should exist between x and y")
+	assert.False(t, a.HasEdge("x", "z"), "edge should not exist between x and z")
+	assert.False(t, a.HasEdge("w", "y"), "edge should not exist between w and y")
+}
+
+func TestGetEdgeWeight(t *testing.T) {
+	a := DirAdj{}
+	a.AddEdge("x", "y", 2.1)
+
+	xy, found := a.GetEdgeWeight("x", "y")
+	assert.True(t, found, "edge should exists between x and y")
+	assert.Equal(t, 2.1, xy, "edge between x and y should have weight 2.0")
+
+	_, found = a.GetEdgeWeight("x", "z")
+	assert.False(t, found, "edge should not exist between x and y")
 }
