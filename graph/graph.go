@@ -1,12 +1,5 @@
 package graph
 
-import (
-	"bufio"
-	"os"
-	"strconv"
-	"strings"
-)
-
 type DirGraph struct {
 	Name   string
 	outAdj DirAdj
@@ -19,44 +12,6 @@ func NewDirGraph(name string) *DirGraph {
 		outAdj: DirAdj{},
 		inAdj:  DirAdj{},
 	}
-}
-
-func (dg *DirGraph) FromFile(filepath string) error {
-	file, err := os.Open(filepath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
-		parts := strings.Split(line, " ")
-		if len(parts) < 2 {
-			continue
-		}
-
-		from := parts[0]
-		to := parts[1]
-		if from == "" || to == "" {
-			continue
-		}
-
-		if len(parts) == 2 {
-			dg.AddEdge(from, to)
-		} else {
-			weight, err := strconv.ParseFloat(parts[2], 64)
-			if err != nil {
-				return err
-			}
-			dg.AddEdge(from, to, weight)
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (dg *DirGraph) AddEdge(from string, to string, weight ...float64) {
@@ -74,8 +29,18 @@ func (dg *DirGraph) RemoveEdge(from string, to string) {
 }
 
 func (dg *DirGraph) RemoveNode(node string) {
-	dg.outAdj.RemoveNode(node)
-	dg.inAdj.RemoveNode(node)
+	if nbrs, ok := dg.GetInNeighbors(node); ok {
+		for _, n := range nbrs {
+			dg.outAdj.RemoveEdge(n, node)
+		}
+	}
+	if nbrs, ok := dg.GetOutNeighbors(node); ok {
+		for _, n := range nbrs {
+			dg.inAdj.RemoveEdge(n, node)
+		}
+	}
+	delete(dg.outAdj, node)
+	delete(dg.inAdj, node)
 }
 
 func (dg *DirGraph) PrintAdj() {
@@ -119,39 +84,43 @@ func (dg *DirGraph) GetInNeighbors(node string) (nbrs []string, found bool) {
 	return dg.inAdj.GetNeighbors(node)
 }
 
-// func (dg *DirGraph) GetDegree(node string) (deg float64, found bool) {
-// 	outDeg, ok := dg.GetOutDegree(node)
-// 	if !ok {
-// 		return deg, false
-// 	}
-// 	inDeg, ok := dg.GetInDegree(node)
-// 	if !ok {
-// 		return deg, false
-// 	}
-// 	return inDeg + outDeg, true
-// }
+func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
+	outDeg, ok := dg.GetOutDegree(node)
+	if !ok {
+		return deg, false
+	}
+	inDeg, ok := dg.GetInDegree(node)
+	if !ok {
+		return deg, false
+	}
+	return inDeg + outDeg, true
+}
 
-// func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
-// 	adj, ok := dg.outAdj[node]
-// 	if !ok {
-// 		return deg, false
-// 	}
-// 	for n := range adj {
-// 		deg += adj[n]
-// 	}
-// 	return deg, true
-// }
+func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
+	adj, ok := dg.outAdj[node]
+	if !ok {
+		return deg, false
+	}
+	for n := range adj {
+		deg += adj[n]
+	}
+	return deg, true
+}
 
-// func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
-// 	adj, ok := dg.inAdj[node]
-// 	if !ok {
-// 		return deg, false
-// 	}
-// 	for n := range adj {
-// 		deg += adj[n]
-// 	}
-// 	return deg, true
-// }
+func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
+	adj, ok := dg.inAdj[node]
+	if !ok {
+		return deg, false
+	}
+	for n := range adj {
+		deg += adj[n]
+	}
+	return deg, true
+}
+
+func (dg *DirGraph) HasEdge(from string, to string) bool {
+	return dg.outAdj.HasEdge(from, to)
+}
 
 func (dg *DirGraph) GetEdgeWeight(from string, to string) (weight float64, found bool) {
 	return dg.outAdj.GetEdgeWeight(from, to)

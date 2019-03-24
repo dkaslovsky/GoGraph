@@ -12,9 +12,26 @@ func TestDirGraphAddEdge(t *testing.T) {
 
 	// test adding edge with default weight
 	dg.AddEdge("x", "y")
+	assert.True(t, dg.HasEdge("x", "y"))
+	assert.False(t, dg.HasEdge("y", "x"))
+	xOutNbrs, _ := dg.GetOutNeighbors("x")
+	assert.Contains(t, xOutNbrs, "y")
+	yInNbrs, _ := dg.GetInNeighbors("y")
+	assert.Contains(t, yInNbrs, "x")
+	// test weight
 	wgt, ok := dg.GetEdgeWeight("x", "y")
 	assert.True(t, ok)
 	assert.Equal(t, 1.0, wgt)
+
+	// test upserting edge, specify weight
+	dg.AddEdge("x", "y", 3.67)
+	assert.True(t, dg.HasEdge("x", "y"))
+	assert.False(t, dg.HasEdge("y", "x"))
+	// test weight
+	wgt, ok = dg.GetEdgeWeight("x", "y")
+	assert.True(t, ok)
+	assert.Equal(t, 3.67, wgt)
+
 }
 
 type DirGraphTestSuite struct {
@@ -33,7 +50,23 @@ func (suite *DirGraphTestSuite) SetupTest() {
 	suite.Nodes = []string{"a", "b", "c", "d"}
 }
 
+func (suite *DirGraphTestSuite) TestDirGraphRemoveEdge() {
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphRemoveNode() {
+	suite.DG.RemoveNode("a")
+	nodes := suite.DG.GetNodes()
+	assert.NotContains(suite.T(), nodes, "a")
+	for _, node := range nodes {
+		assert.False(suite.T(), suite.DG.HasEdge(node, "a"))
+		assert.False(suite.T(), suite.DG.HasEdge("a", node))
+	}
+}
+
 func (suite *DirGraphTestSuite) TestDirGraphGetNodes() {
+
+	// also need to test when node isn't there
+
 	nodes := suite.DG.GetNodes()
 	assert.Len(suite.T(), nodes, len(suite.Nodes))
 	for _, node := range suite.Nodes {
@@ -126,6 +159,49 @@ func (suite *DirGraphTestSuite) TestDirGraphGetInNeighbors() {
 			assert.Contains(suite.T(), nbrs, n)
 		}
 	}
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphGetTotalDegree() {
+	d, ok := suite.DG.GetTotalDegree("a")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 10.5, d)
+	_, ok = suite.DG.GetTotalDegree("foo")
+	assert.False(suite.T(), ok)
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphGetOutDegree() {
+	d, ok := suite.DG.GetOutDegree("a")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 3.5, d)
+	_, ok = suite.DG.GetOutDegree("foo")
+	assert.False(suite.T(), ok)
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphGetInDegree() {
+	d, ok := suite.DG.GetInDegree("a")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 7.0, d)
+	_, ok = suite.DG.GetInDegree("foo")
+	assert.False(suite.T(), ok)
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphHasEdge() {
+	assert.True(suite.T(), suite.DG.HasEdge("a", "c"))
+	assert.True(suite.T(), suite.DG.HasEdge("c", "a"))
+	assert.False(suite.T(), suite.DG.HasEdge("foo", "bar"))
+}
+
+func (suite *DirGraphTestSuite) TestDirGraphGetEdgeWeight() {
+	w, ok := suite.DG.GetEdgeWeight("a", "c")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 2.0, w)
+
+	w, ok = suite.DG.GetEdgeWeight("c", "a")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 7.0, w)
+
+	w, ok = suite.DG.GetEdgeWeight("foo", "bar")
+	assert.False(suite.T(), ok)
 }
 
 func TestDirGraphTestSuite(t *testing.T) {
