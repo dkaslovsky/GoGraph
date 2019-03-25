@@ -40,6 +40,10 @@ type DirGraphTestSuite struct {
 	Nodes []string
 }
 
+func TestDirGraphTestSuite(t *testing.T) {
+	suite.Run(t, new(DirGraphTestSuite))
+}
+
 func (suite *DirGraphTestSuite) SetupTest() {
 	suite.DG = NewDirGraph("test")
 	suite.DG.AddEdge("a", "b", 1.5)
@@ -64,23 +68,25 @@ func (suite *DirGraphTestSuite) TestDirGraphRemoveNode() {
 }
 
 func (suite *DirGraphTestSuite) TestDirGraphGetNodes() {
-
-	// also need to test when node isn't there
-
 	nodes := suite.DG.GetNodes()
 	assert.Len(suite.T(), nodes, len(suite.Nodes))
 	for _, node := range suite.Nodes {
 		assert.Contains(suite.T(), nodes, node)
 	}
+
+	// test result on empty graph
+	dgEmpty := NewDirGraph("testEmpty")
+	nodes = dgEmpty.GetNodes()
+	assert.Empty(suite.T(), nodes)
 }
 
-type getNbrTest struct {
+type getDirNbrTest struct {
 	node    string
 	exists  bool
 	expNbrs []string
 }
 
-var getOutNbrTest = []getNbrTest{
+var getOutNbrTest = []getDirNbrTest{
 	{
 		node:    "a",
 		exists:  true,
@@ -120,7 +126,7 @@ func (suite *DirGraphTestSuite) TestDirGraphGetOutNeighbors() {
 	}
 }
 
-var getInNbrTest = []getNbrTest{
+var getInNbrTest = []getDirNbrTest{
 	{
 		node:    "a",
 		exists:  true,
@@ -202,8 +208,4 @@ func (suite *DirGraphTestSuite) TestDirGraphGetEdgeWeight() {
 
 	w, ok = suite.DG.GetEdgeWeight("foo", "bar")
 	assert.False(suite.T(), ok)
-}
-
-func TestDirGraphTestSuite(t *testing.T) {
-	suite.Run(t, new(DirGraphTestSuite))
 }
