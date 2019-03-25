@@ -9,7 +9,7 @@ import (
 
 // What assertions can be made here?
 func TestPrint(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 1)
 	a.AddEdge("x", "z", 1)
 	a.AddEdge("y", "x", 1)
@@ -17,7 +17,7 @@ func TestPrint(t *testing.T) {
 }
 
 func TestAddEdge(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 
 	// test adding edge with default weight
 	a.AddEdge("x", "y", 1)
@@ -36,7 +36,7 @@ func TestAddEdge(t *testing.T) {
 }
 
 func TestRemoveEdge(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 1)
 	a.AddEdge("x", "w", 1)
 	a.AddEdge("x", "z", 1)
@@ -52,7 +52,7 @@ func TestRemoveEdge(t *testing.T) {
 	assert.Contains(t, xNbrs, "z", "z should still be neighbor of x")
 
 	// test removing nonexistent edge from nonexisting node
-	aOrig := DirAdj{}
+	aOrig := dirAdj{}
 	for outerK, outerV := range a {
 		aOrig[outerK] = outerV
 	}
@@ -81,7 +81,7 @@ func TestRemoveEdge(t *testing.T) {
 }
 
 func TestRemoveNode(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 1)
 	a.AddEdge("x", "z", 1)
 	a.AddEdge("y", "x", 1)
@@ -99,7 +99,7 @@ func TestRemoveNode(t *testing.T) {
 	assert.NotContains(t, yNbrs, "x", "node x should no longer be a neighbor of node y")
 
 	// test removing nonexistent node
-	aOrig := DirAdj{}
+	aOrig := dirAdj{}
 	for outerK, outerV := range a {
 		aOrig[outerK] = outerV
 	}
@@ -109,7 +109,7 @@ func TestRemoveNode(t *testing.T) {
 }
 
 func TestGetNeighbors(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 1)
 	a.AddEdge("x", "z", 1)
 	a.AddEdge("y", "x", 1)
@@ -127,7 +127,7 @@ func TestGetNeighbors(t *testing.T) {
 }
 
 func TestHasEdge(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 1)
 	assert.True(t, a.HasEdge("x", "y"), "edge should exist between x and y")
 	assert.False(t, a.HasEdge("x", "z"), "edge should not exist between x and z")
@@ -135,7 +135,7 @@ func TestHasEdge(t *testing.T) {
 }
 
 func TestGetEdgeWeight(t *testing.T) {
-	a := DirAdj{}
+	a := dirAdj{}
 	a.AddEdge("x", "y", 2.1)
 
 	xy, found := a.GetEdgeWeight("x", "y")

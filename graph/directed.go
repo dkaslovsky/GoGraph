@@ -2,15 +2,15 @@ package graph
 
 type DirGraph struct {
 	Name   string
-	outAdj DirAdj
-	inAdj  DirAdj // inverted index of outAdj
+	outAdj dirAdj
+	inAdj  dirAdj // inverted index of outAdj
 }
 
 func NewDirGraph(name string) *DirGraph {
 	return &DirGraph{
 		Name:   name,
-		outAdj: DirAdj{},
-		inAdj:  DirAdj{},
+		outAdj: dirAdj{},
+		inAdj:  dirAdj{},
 	}
 }
 
