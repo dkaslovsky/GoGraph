@@ -8,14 +8,29 @@ import (
 )
 
 func main() {
-	g := graph.NewDirGraph("myGraph")
+
+	// undirected graph
+	g := graph.NewGraph("Graph")
 	err := io.ReadFromFile("graph.txt", g)
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	}
 
+	fmt.Print(g.Name)
+	fmt.Println("\nAdjacency:")
+	g.PrintAdj()
+	fmt.Println()
+
+	// directed graph
+	dg := graph.NewDirGraph("DirGraph")
+	err = io.ReadFromFile("graph.txt", dg)
+	if err != nil {
+		fmt.Printf("Error %v\n", err)
+	}
+
+	fmt.Print(dg.Name)
 	fmt.Println("\nOut adjacency:")
-	g.PrintOutAdj()
+	dg.PrintOutAdj()
 	fmt.Println("\nIn adjacency:")
-	g.PrintInAdj()
+	dg.PrintInAdj()
 }
