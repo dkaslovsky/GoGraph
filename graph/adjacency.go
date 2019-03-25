@@ -6,7 +6,7 @@ import (
 
 type dirAdj map[string]map[string]float64
 
-func (a dirAdj) Print() {
+func (a dirAdj) print() {
 	for node := range a {
 		fmt.Printf("%s:\n", node)
 		nbrs := a[node]
@@ -16,7 +16,7 @@ func (a dirAdj) Print() {
 	}
 }
 
-func (a dirAdj) AddEdge(from string, to string, wgt float64) {
+func (a dirAdj) addEdge(from string, to string, wgt float64) {
 	nbrs, ok := a[from]
 	if !ok {
 		a[from] = map[string]float64{to: wgt}
@@ -25,7 +25,7 @@ func (a dirAdj) AddEdge(from string, to string, wgt float64) {
 	}
 }
 
-func (a dirAdj) RemoveEdge(from string, to string) {
+func (a dirAdj) removeEdge(from string, to string) {
 	nbrs, ok := a[from]
 	if !ok {
 		return
@@ -41,14 +41,14 @@ func (a dirAdj) RemoveEdge(from string, to string) {
 // Note that this is an O(n) operation, so if an inverted index is available it will be
 // more efficient (i.e. O(k) where k is th number nodes for which node is a to-neighbor)
 // to use that structure to remove a node
-func (a dirAdj) RemoveNode(node string) {
+func (a dirAdj) removeNode(node string) {
 	delete(a, node)
 	for n := range a {
-		a.RemoveEdge(n, node)
+		a.removeEdge(n, node)
 	}
 }
 
-func (a dirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
+func (a dirAdj) getNeighbors(node string) (nbrs []string, found bool) {
 	adj, ok := a[node]
 	if !ok {
 		return nbrs, false
@@ -59,7 +59,7 @@ func (a dirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
 	return nbrs, true
 }
 
-func (a dirAdj) HasEdge(from string, to string) bool {
+func (a dirAdj) hasEdge(from string, to string) bool {
 	nbrs, ok := a[from]
 	if !ok {
 		return false
@@ -71,8 +71,8 @@ func (a dirAdj) HasEdge(from string, to string) bool {
 	return true
 }
 
-func (a dirAdj) GetEdgeWeight(from string, to string) (weight float64, found bool) {
-	if a.HasEdge(from, to) {
+func (a dirAdj) getEdgeWeight(from string, to string) (weight float64, found bool) {
+	if a.hasEdge(from, to) {
 		w := a[from][to]
 		return w, true
 	}

@@ -19,24 +19,24 @@ func (dg *DirGraph) AddEdge(from string, to string, weight ...float64) {
 	if len(weight) > 0 {
 		wgt = weight[0]
 	}
-	dg.outAdj.AddEdge(from, to, wgt)
-	dg.inAdj.AddEdge(to, from, wgt)
+	dg.outAdj.addEdge(from, to, wgt)
+	dg.inAdj.addEdge(to, from, wgt)
 }
 
 func (dg *DirGraph) RemoveEdge(from string, to string) {
-	dg.outAdj.RemoveEdge(from, to)
-	dg.inAdj.RemoveEdge(to, from)
+	dg.outAdj.removeEdge(from, to)
+	dg.inAdj.removeEdge(to, from)
 }
 
 func (dg *DirGraph) RemoveNode(node string) {
 	if nbrs, ok := dg.GetInNeighbors(node); ok {
 		for _, n := range nbrs {
-			dg.outAdj.RemoveEdge(n, node)
+			dg.outAdj.removeEdge(n, node)
 		}
 	}
 	if nbrs, ok := dg.GetOutNeighbors(node); ok {
 		for _, n := range nbrs {
-			dg.inAdj.RemoveEdge(n, node)
+			dg.inAdj.removeEdge(n, node)
 		}
 	}
 	delete(dg.outAdj, node)
@@ -48,11 +48,11 @@ func (dg *DirGraph) PrintAdj() {
 }
 
 func (dg *DirGraph) PrintOutAdj() {
-	dg.outAdj.Print()
+	dg.outAdj.print()
 }
 
 func (dg *DirGraph) PrintInAdj() {
-	dg.inAdj.Print()
+	dg.inAdj.print()
 }
 
 func (dg *DirGraph) GetNodes() (nodes []string) {
@@ -77,11 +77,11 @@ func (dg *DirGraph) GetNeighbors(node string) (nbrs []string, found bool) {
 }
 
 func (dg *DirGraph) GetOutNeighbors(node string) (nbrs []string, found bool) {
-	return dg.outAdj.GetNeighbors(node)
+	return dg.outAdj.getNeighbors(node)
 }
 
 func (dg *DirGraph) GetInNeighbors(node string) (nbrs []string, found bool) {
-	return dg.inAdj.GetNeighbors(node)
+	return dg.inAdj.getNeighbors(node)
 }
 
 func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
@@ -119,9 +119,9 @@ func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
 }
 
 func (dg *DirGraph) HasEdge(from string, to string) bool {
-	return dg.outAdj.HasEdge(from, to)
+	return dg.outAdj.hasEdge(from, to)
 }
 
 func (dg *DirGraph) GetEdgeWeight(from string, to string) (weight float64, found bool) {
-	return dg.outAdj.GetEdgeWeight(from, to)
+	return dg.outAdj.getEdgeWeight(from, to)
 }
