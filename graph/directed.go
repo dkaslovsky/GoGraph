@@ -97,23 +97,27 @@ func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
 }
 
 func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
-	adj, ok := dg.outAdj[node]
+	nbrs, ok := dg.GetOutNeighbors(node)
 	if !ok {
 		return deg, false
 	}
-	for n := range adj {
-		deg += adj[n]
+	for _, n := range nbrs {
+		if w, ok := dg.GetEdgeWeight(node, n); ok {
+			deg += w
+		}
 	}
 	return deg, true
 }
 
 func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
-	adj, ok := dg.inAdj[node]
+	nbrs, ok := dg.GetInNeighbors(node)
 	if !ok {
 		return deg, false
 	}
-	for n := range adj {
-		deg += adj[n]
+	for _, n := range nbrs {
+		if w, ok := dg.GetEdgeWeight(n, node); ok {
+			deg += w
+		}
 	}
 	return deg, true
 }

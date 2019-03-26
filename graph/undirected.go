@@ -50,12 +50,14 @@ func (g *Graph) GetNeighbors(node string) (nbrs []string, found bool) {
 }
 
 func (g *Graph) GetDegree(node string) (deg float64, found bool) {
-	adj, ok := g.adj[node]
+	nbrs, ok := g.GetNeighbors(node)
 	if !ok {
 		return deg, false
 	}
-	for n := range adj {
-		deg += adj[n]
+	for _, n := range nbrs {
+		if w, ok := g.GetEdgeWeight(node, n); ok {
+			deg += w
+		}
 	}
 	return deg, true
 }
