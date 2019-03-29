@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -68,8 +67,7 @@ func (suite *DirAdjTestSuite) TestRemoveEdge() {
 		AOrig[outerK] = outerV
 	}
 	suite.A.removeEdge("foo", "bar")
-	isEqual := reflect.DeepEqual(suite.A, AOrig)
-	assert.True(suite.T(), isEqual, "adjacency should be unchanged")
+	assert.Equal(suite.T(), AOrig, suite.A, "adjacency should be unchanged")
 
 	// test removing existing edge
 	suite.A.removeEdge("x", "w")
@@ -108,8 +106,7 @@ func (suite *DirAdjTestSuite) TestRemoveNode() {
 		AOrig[outerK] = outerV
 	}
 	suite.A.removeNode("foo")
-	isEqual := reflect.DeepEqual(suite.A, AOrig)
-	assert.True(suite.T(), isEqual, "adjacency should be unchanged")
+	assert.Equal(suite.T(), AOrig, suite.A, "adjacency should be unchanged")
 }
 
 func (suite *DirAdjTestSuite) TestGetNeighbors() {
