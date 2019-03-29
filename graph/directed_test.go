@@ -55,6 +55,17 @@ func (suite *DirGraphTestSuite) SetupTest() {
 }
 
 func (suite *DirGraphTestSuite) TestDirGraphRemoveEdge() {
+	suite.DG.RemoveEdge("a", "b")
+	assert.False(suite.T(), suite.DG.HasEdge("a", "b"))
+
+	// test removing edge that does not exist
+	suite.DG.RemoveEdge("b", "a")
+	assert.False(suite.T(), suite.DG.HasEdge("b", "a"))
+
+	// test removing edge that leavs a node with no neighbors also removes the node
+	suite.DG.RemoveEdge("c", "a")
+	suite.DG.RemoveEdge("c", "d")
+	assert.NotContains(suite.T(), suite.DG.outAdj, "c")
 }
 
 func (suite *DirGraphTestSuite) TestDirGraphRemoveNode() {
