@@ -17,12 +17,11 @@ func (a dirAdj) print() {
 }
 
 func (a dirAdj) addEdge(from string, to string, wgt float64) {
-	nbrs, ok := a[from]
-	if !ok {
-		a[from] = map[string]float64{to: wgt}
-	} else {
+	if nbrs, ok := a[from]; ok {
 		nbrs[to] = wgt
+		return
 	}
+	a[from] = map[string]float64{to: wgt}
 }
 
 func (a dirAdj) removeEdge(from string, to string) {
@@ -37,7 +36,7 @@ func (a dirAdj) removeEdge(from string, to string) {
 	}
 }
 
-// RemoveNode removes a node from dirAdj
+// removeNode removes a node from dirAdj
 // Note that this is an O(n) operation, so if an inverted index is available it will be
 // more efficient (i.e. O(k) where k is th number nodes for which node is a to-neighbor)
 // to use that structure to remove a node
