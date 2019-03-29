@@ -31,16 +31,14 @@ func (dg *DirGraph) RemoveEdge(from string, to string) {
 func (dg *DirGraph) RemoveNode(node string) {
 	if nbrs, ok := dg.GetInNeighbors(node); ok {
 		for _, n := range nbrs {
-			dg.outAdj.removeEdge(n, node)
+			dg.RemoveEdge(n, node)
 		}
 	}
 	if nbrs, ok := dg.GetOutNeighbors(node); ok {
 		for _, n := range nbrs {
-			dg.inAdj.removeEdge(n, node)
+			dg.RemoveEdge(node, n)
 		}
 	}
-	delete(dg.outAdj, node)
-	delete(dg.inAdj, node)
 }
 
 func (dg *DirGraph) PrintAdj() {
