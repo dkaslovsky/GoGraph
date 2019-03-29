@@ -7,6 +7,12 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func TestNewGraph(t *testing.T) {
+	dg := NewGraph("test")
+	assert.Equal(t, "test", dg.Name)
+	assert.IsType(t, dirAdj{}, dg.adj)
+}
+
 func TestGraphAddEdge(t *testing.T) {
 	g := NewGraph("test")
 

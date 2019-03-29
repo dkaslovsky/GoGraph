@@ -7,6 +7,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+func TestNewDirGraph(t *testing.T) {
+	dg := NewDirGraph("test")
+	assert.Equal(t, "test", dg.Name)
+	assert.IsType(t, dirAdj{}, dg.outAdj)
+	assert.IsType(t, dirAdj{}, dg.inAdj)
+}
+
 func TestDirGraphAddEdge(t *testing.T) {
 	dg := NewDirGraph("test")
 
