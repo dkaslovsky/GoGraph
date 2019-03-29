@@ -11,7 +11,9 @@ type edgeAdder interface {
 	AddEdge(string, string, ...float64)
 }
 
-func ReadFromFile(filepath string, ea edgeAdder) error {
+// LoadGraphFromFile reads a file representation of a graph (newline delimited triples of the form
+// "node node weight" where weight is optional) and populates a struct statisfying edgeAdder
+func LoadGraphFromFile(filepath string, ea edgeAdder) error {
 	file, err := os.Open(filepath)
 	if err != nil {
 		return err

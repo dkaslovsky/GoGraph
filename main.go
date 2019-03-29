@@ -11,7 +11,7 @@ func main() {
 
 	// undirected graph
 	g := graph.NewGraph("Graph")
-	err := io.ReadFromFile("graph.txt", g)
+	err := io.LoadGraphFromFile("graph.golden", g)
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	}
@@ -23,7 +23,7 @@ func main() {
 
 	// directed graph
 	dg := graph.NewDirGraph("DirGraph")
-	err = io.ReadFromFile("graph.txt", dg)
+	err = io.LoadGraphFromFile("graph.golden", dg)
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 	}
