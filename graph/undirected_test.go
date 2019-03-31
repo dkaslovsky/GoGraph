@@ -146,14 +146,6 @@ func (suite *GraphTestSuite) TestGraphGetInvNeighbors() {
 	}
 }
 
-func (suite *GraphTestSuite) TestGraphGetOutDegree() {
-	d, ok := suite.G.GetOutDegree("a")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 10.5, d)
-	_, ok = suite.G.GetDegree("foo")
-	assert.False(suite.T(), ok)
-}
-
 func (suite *GraphTestSuite) TestGraphGetInDegree() {
 	nodes := suite.G.GetNodes()
 	for _, node := range nodes {

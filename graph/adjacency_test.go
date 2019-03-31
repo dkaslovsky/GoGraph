@@ -105,6 +105,24 @@ func (suite *DirAdjTestSuite) TestGetNeighbors() {
 	assert.Contains(suite.T(), xNbrs, "z", "node z should be a neighbor of node x")
 }
 
+func (suite *DirAdjTestSuite) TestDirAdjGetOutDegree() {
+	suite.A.addDirectedEdge("a", "b", 2.1)
+	suite.A.addDirectedEdge("a", "c", 3.0)
+	suite.A.addDirectedEdge("b", "a", 8.9)
+	suite.A.addDirectedEdge("b", "c", 2.0)
+
+	d, ok := suite.A.GetOutDegree("a")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 5.1, d)
+
+	d, ok = suite.A.GetOutDegree("b")
+	assert.True(suite.T(), ok)
+	assert.Equal(suite.T(), 10.9, d)
+
+	_, ok = suite.A.GetOutDegree("foo")
+	assert.False(suite.T(), ok)
+}
+
 func (suite *DirAdjTestSuite) TestHasEdge() {
 	assert.True(suite.T(), suite.A.HasEdge("x", "y"), "edge should exist between x and y")
 	assert.False(suite.T(), suite.A.HasEdge("w", "y"), "edge should not exist between w and y")

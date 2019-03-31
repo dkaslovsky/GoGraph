@@ -78,30 +78,7 @@ func (g *Graph) GetDegree(node string) (deg float64, found bool) {
 	return g.GetOutDegree(node)
 }
 
-// GetOutDegree calculates the sum of weights of all edges from a node
-func (g *Graph) GetOutDegree(node string) (deg float64, found bool) {
-	nbrs, ok := g.GetNeighbors(node)
-	if !ok {
-		return deg, false
-	}
-	for _, n := range nbrs {
-		if w, ok := g.GetEdgeWeight(node, n); ok {
-			deg += w
-		}
-	}
-	return deg, true
-}
-
 // GetInDegree calculates the sum of weights of all edges to a node
 func (g *Graph) GetInDegree(node string) (deg float64, found bool) {
-	nbrs, ok := g.GetInvNeighbors(node)
-	if !ok {
-		return deg, false
-	}
-	for _, n := range nbrs {
-		if w, ok := g.GetEdgeWeight(n, node); ok {
-			deg += w
-		}
-	}
-	return deg, true
+	return g.invAdj.GetOutDegree(node)
 }

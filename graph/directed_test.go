@@ -172,14 +172,6 @@ func (suite *DirGraphTestSuite) TestDirGraphGetTotalDegree() {
 	assert.False(suite.T(), ok)
 }
 
-func (suite *DirGraphTestSuite) TestDirGraphGetOutDegree() {
-	d, ok := suite.DG.GetOutDegree("a")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 3.5, d)
-	_, ok = suite.DG.GetOutDegree("foo")
-	assert.False(suite.T(), ok)
-}
-
 func (suite *DirGraphTestSuite) TestDirGraphGetInDegree() {
 	d, ok := suite.DG.GetInDegree("a")
 	assert.True(suite.T(), ok)

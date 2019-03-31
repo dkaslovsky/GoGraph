@@ -104,30 +104,7 @@ func (dg *DirGraph) GetDegree(node string) (deg float64, found bool) {
 	return dg.GetOutDegree(node)
 }
 
-// GetOutDegree calculates the sum of weights of all edges from a node
-func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
-	nbrs, ok := dg.GetNeighbors(node)
-	if !ok {
-		return deg, false
-	}
-	for _, n := range nbrs {
-		if w, ok := dg.GetEdgeWeight(node, n); ok {
-			deg += w
-		}
-	}
-	return deg, true
-}
-
 // GetInDegree calculates the sum of weights of all edges to a node
 func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
-	nbrs, ok := dg.GetInvNeighbors(node)
-	if !ok {
-		return deg, false
-	}
-	for _, n := range nbrs {
-		if w, ok := dg.GetEdgeWeight(n, node); ok {
-			deg += w
-		}
-	}
-	return deg, true
+	return dg.invAdj.GetOutDegree(node)
 }
