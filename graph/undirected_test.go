@@ -136,10 +136,30 @@ func (suite *GraphTestSuite) TestGraphGetNodes() {
 	assert.Empty(suite.T(), nodes)
 }
 
-func (suite *GraphTestSuite) TestGraphGetDegree() {
-	d, ok := suite.G.GetDegree("a")
+func (suite *GraphTestSuite) TestGraphGetInvNeighbors() {
+	nodes := suite.G.GetNodes()
+	for _, node := range nodes {
+		nbrs, ok := suite.G.GetInvNeighbors(node)
+		assert.True(suite.T(), ok)
+		expectedNbrs, _ := suite.G.GetNeighbors(node)
+		assert.ElementsMatch(suite.T(), expectedNbrs, nbrs)
+	}
+}
+
+func (suite *GraphTestSuite) TestGraphGetOutDegree() {
+	d, ok := suite.G.GetOutDegree("a")
 	assert.True(suite.T(), ok)
 	assert.Equal(suite.T(), 10.5, d)
 	_, ok = suite.G.GetDegree("foo")
 	assert.False(suite.T(), ok)
+}
+
+func (suite *GraphTestSuite) TestGraphGetInDegree() {
+	nodes := suite.G.GetNodes()
+	for _, node := range nodes {
+		d, ok := suite.G.GetInDegree(node)
+		assert.True(suite.T(), ok)
+		expectedD, _ := suite.G.GetOutDegree(node)
+		assert.Equal(suite.T(), expectedD, d)
+	}
 }

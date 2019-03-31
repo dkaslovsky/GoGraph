@@ -7,7 +7,8 @@ import (
 // Graph is a symmetric adjacency map representation of an undirected graph
 type Graph struct {
 	dirAdj
-	Name string
+	Name   string
+	invAdj *dirAdj
 }
 
 // NewGraph creates a new undirected graph
@@ -16,6 +17,7 @@ func NewGraph(name string, readers ...io.ReadCloser) (*Graph, error) {
 		dirAdj: dirAdj{},
 		Name:   name,
 	}
+	g.invAdj = &g.dirAdj
 	for _, r := range readers {
 		err := g.addFromReader(r)
 		if err != nil {
@@ -51,19 +53,53 @@ func (g *Graph) RemoveNode(node string) {
 	}
 }
 
+// PrintInv displays a DirGraph's incoming adjacency structure
+func (g *Graph) PrintInv() {
+	g.invAdj.Print()
+}
+
 // GetNodes gets a slice of all nodes in a Graph
 func (g *Graph) GetNodes() (nodes []string) {
 	return g.getFromNodes()
 }
 
+// GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
+func (g *Graph) GetInvNeighbors(node string) (nbrs []string, found bool) {
+	return g.invAdj.GetNeighbors(node)
+}
+
+// GetTotalDegree calculates the sum of weights of all edges from and to a node
+func (g *Graph) GetTotalDegree(node string) (deg float64, found bool) {
+	return g.GetOutDegree(node)
+}
+
 // GetDegree calculates the sum of weights of all edges of a node
 func (g *Graph) GetDegree(node string) (deg float64, found bool) {
+	return g.GetOutDegree(node)
+}
+
+// GetOutDegree calculates the sum of weights of all edges from a node
+func (g *Graph) GetOutDegree(node string) (deg float64, found bool) {
 	nbrs, ok := g.GetNeighbors(node)
 	if !ok {
 		return deg, false
 	}
 	for _, n := range nbrs {
 		if w, ok := g.GetEdgeWeight(node, n); ok {
+			deg += w
+		}
+	}
+	return deg, true
+}
+
+// GetInDegree calculates the sum of weights of all edges to a node
+func (g *Graph) GetInDegree(node string) (deg float64, found bool) {
+	nbrs, ok := g.GetInvNeighbors(node)
+	if !ok {
+		return deg, false
+	}
+	for _, n := range nbrs {
+		if w, ok := g.GetEdgeWeight(n, node); ok {
 			deg += w
 		}
 	}
