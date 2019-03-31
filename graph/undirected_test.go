@@ -8,9 +8,9 @@ import (
 )
 
 func TestNewGraph(t *testing.T) {
-	dg := NewGraph("test")
-	assert.Equal(t, "test", dg.Name)
-	assert.IsType(t, dirAdj{}, dg.adj)
+	g := NewGraph("test")
+	assert.Equal(t, "test", g.Name)
+	assert.IsType(t, dirAdj{}, g.dirAdj)
 }
 
 func TestGraphAddEdge(t *testing.T) {
@@ -115,41 +115,40 @@ func (suite *GraphTestSuite) TestGraphGetNodes() {
 	assert.Empty(suite.T(), nodes)
 }
 
-type getNbrTest struct {
-	node    string
-	exists  bool
-	expNbrs []string
-}
+func (suite *GraphTestSuite) TestGraphGetNeighbors() {
+	type testCase struct {
+		node    string
+		exists  bool
+		expNbrs []string
+	}
+	var table = map[string]testCase{
+		"get neighbors of node a": {
+			node:    "a",
+			exists:  true,
+			expNbrs: []string{"b", "c", "d"},
+		},
+		"get neighbors of node b": {
+			node:    "b",
+			exists:  true,
+			expNbrs: []string{"a", "c"},
+		},
+		"get neighbors of node c": {
+			node:    "c",
+			exists:  true,
+			expNbrs: []string{"a", "b", "d"},
+		},
+		"get neighbors of node d": {
+			node:    "d",
+			exists:  true,
+			expNbrs: []string{"a", "c"},
+		},
+		"get neighbors of nonexistent node": {
+			node:   "z",
+			exists: false,
+		},
+	}
 
-var getNbrTestTable = []getNbrTest{
-	{
-		node:    "a",
-		exists:  true,
-		expNbrs: []string{"b", "c", "d"},
-	},
-	{
-		node:    "b",
-		exists:  true,
-		expNbrs: []string{"a", "c"},
-	},
-	{
-		node:    "c",
-		exists:  true,
-		expNbrs: []string{"a", "b", "d"},
-	},
-	{
-		node:    "d",
-		exists:  true,
-		expNbrs: []string{"a", "c"},
-	},
-	{
-		node:   "z",
-		exists: false,
-	},
-}
-
-func (suite *GraphTestSuite) TestGraphGetOutNeighbors() {
-	for _, tt := range getNbrTestTable {
+	for _, tt := range table {
 		nbrs, ok := suite.G.GetNeighbors(tt.node)
 		if !tt.exists {
 			assert.False(suite.T(), ok)
@@ -167,24 +166,5 @@ func (suite *GraphTestSuite) TestGraphGetDegree() {
 	assert.True(suite.T(), ok)
 	assert.Equal(suite.T(), 10.5, d)
 	_, ok = suite.G.GetDegree("foo")
-	assert.False(suite.T(), ok)
-}
-
-func (suite *GraphTestSuite) TestGraphHasEdge() {
-	assert.True(suite.T(), suite.G.HasEdge("a", "c"))
-	assert.True(suite.T(), suite.G.HasEdge("c", "a"))
-	assert.False(suite.T(), suite.G.HasEdge("foo", "bar"))
-}
-
-func (suite *GraphTestSuite) TestGraphGetEdgeWeight() {
-	w, ok := suite.G.GetEdgeWeight("a", "c")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 2.0, w)
-
-	w, ok = suite.G.GetEdgeWeight("c", "a")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 2.0, w)
-
-	w, ok = suite.G.GetEdgeWeight("foo", "bar")
 	assert.False(suite.T(), ok)
 }
