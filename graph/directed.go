@@ -2,17 +2,17 @@ package graph
 
 // DirGraph is an adjacency map representation of a directed graph
 type DirGraph struct {
+	dirAdj
 	Name   string
-	outAdj dirAdj
-	inAdj  dirAdj // inverted index of outAdj
+	invAdj dirAdj // inverted adjacency for faster lookups
 }
 
 // NewDirGraph creates a new directed graph
 func NewDirGraph(name string) *DirGraph {
 	return &DirGraph{
+		dirAdj: dirAdj{},
 		Name:   name,
-		outAdj: dirAdj{},
-		inAdj:  dirAdj{},
+		invAdj: dirAdj{},
 	}
 }
 
@@ -22,56 +22,46 @@ func (dg *DirGraph) AddEdge(from string, to string, weight ...float64) {
 	if len(weight) > 0 {
 		wgt = weight[0]
 	}
-	dg.outAdj.addEdge(from, to, wgt)
-	dg.inAdj.addEdge(to, from, wgt)
+	dg.addDirectedEdge(from, to, wgt)
+	dg.invAdj.addDirectedEdge(to, from, wgt)
 }
 
 // RemoveEdge removes an edge that exists from a node to another node
 func (dg *DirGraph) RemoveEdge(from string, to string) {
-	dg.outAdj.removeEdge(from, to)
-	dg.inAdj.removeEdge(to, from)
+	dg.removeDirectedEdge(from, to)
+	dg.invAdj.removeDirectedEdge(to, from)
 }
 
 // RemoveNode removes a node entirely from a DirGraph such that
 // no edges exist between it an any other node
 func (dg *DirGraph) RemoveNode(node string) {
-	if nbrs, ok := dg.GetInNeighbors(node); ok {
+	if nbrs, ok := dg.GetInvNeighbors(node); ok {
 		for _, n := range nbrs {
 			dg.RemoveEdge(n, node)
 		}
 	}
-	if nbrs, ok := dg.GetOutNeighbors(node); ok {
+	if nbrs, ok := dg.GetNeighbors(node); ok {
 		for _, n := range nbrs {
 			dg.RemoveEdge(node, n)
 		}
 	}
 }
 
-// PrintAdj displays a DirGraph's adjacency structure as a map of source nodes to target nodes
-func (dg *DirGraph) PrintAdj() {
-	dg.PrintOutAdj()
-}
-
-// PrintOutAdj displays a DirGraph's outgoing adjacency structure
-func (dg *DirGraph) PrintOutAdj() {
-	dg.outAdj.print()
-}
-
-// PrintInAdj displays a DirGraph's incoming adjacency structure
-func (dg *DirGraph) PrintInAdj() {
-	dg.inAdj.print()
+// PrintInv displays a DirGraph's incoming adjacency structure
+func (dg *DirGraph) PrintInv() {
+	dg.invAdj.Print()
 }
 
 // GetNodes gets a slice of all nodes in a DirGraph
 func (dg *DirGraph) GetNodes() (nodes []string) {
 	set := map[string]struct{}{}
-	for node := range dg.outAdj {
+	for _, node := range dg.getFromNodes() {
 		if _, ok := set[node]; !ok {
 			set[node] = struct{}{}
 			nodes = append(nodes, node)
 		}
 	}
-	for node := range dg.inAdj {
+	for _, node := range dg.invAdj.getFromNodes() {
 		if _, ok := set[node]; !ok {
 			set[node] = struct{}{}
 			nodes = append(nodes, node)
@@ -80,19 +70,9 @@ func (dg *DirGraph) GetNodes() (nodes []string) {
 	return nodes
 }
 
-// GetNeighbors gets a slice of nodes that have an edge to them from a specified node
-func (dg *DirGraph) GetNeighbors(node string) (nbrs []string, found bool) {
-	return dg.GetOutNeighbors(node)
-}
-
-// GetOutNeighbors gets a slice of nodes that have an edge to them from a specified node
-func (dg *DirGraph) GetOutNeighbors(node string) (nbrs []string, found bool) {
-	return dg.outAdj.getNeighbors(node)
-}
-
-// GetInNeighbors gets a slice of nodes that have an edge from them to a specified node
-func (dg *DirGraph) GetInNeighbors(node string) (nbrs []string, found bool) {
-	return dg.inAdj.getNeighbors(node)
+// GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
+func (dg *DirGraph) GetInvNeighbors(node string) (nbrs []string, found bool) {
+	return dg.invAdj.GetNeighbors(node)
 }
 
 // GetTotalDegree calculates the sum of weights of all edges from and to a node
@@ -110,7 +90,7 @@ func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
 
 // GetOutDegree calculates the sum of weights of all edges from a node
 func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
-	nbrs, ok := dg.GetOutNeighbors(node)
+	nbrs, ok := dg.GetNeighbors(node)
 	if !ok {
 		return deg, false
 	}
@@ -124,7 +104,7 @@ func (dg *DirGraph) GetOutDegree(node string) (deg float64, found bool) {
 
 // GetInDegree calculates the sum of weights of all edges to a node
 func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
-	nbrs, ok := dg.GetInNeighbors(node)
+	nbrs, ok := dg.GetInvNeighbors(node)
 	if !ok {
 		return deg, false
 	}
@@ -134,14 +114,4 @@ func (dg *DirGraph) GetInDegree(node string) (deg float64, found bool) {
 		}
 	}
 	return deg, true
-}
-
-// HasEdge returns true if an edge exists from a node to another node, false otherwise
-func (dg *DirGraph) HasEdge(from string, to string) bool {
-	return dg.outAdj.hasEdge(from, to)
-}
-
-// GetEdgeWeight gets the weight of an edge from a node to another node if the edge exists
-func (dg *DirGraph) GetEdgeWeight(from string, to string) (weight float64, found bool) {
-	return dg.outAdj.getEdgeWeight(from, to)
 }
