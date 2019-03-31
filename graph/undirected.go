@@ -7,11 +7,18 @@ type Graph struct {
 }
 
 // NewGraph creates a new undirected graph
-func NewGraph(name string) *Graph {
-	return &Graph{
+func NewGraph(name string, readers ...reader) (*Graph, error) {
+	g := &Graph{
 		dirAdj: dirAdj{},
 		Name:   name,
 	}
+	for _, r := range readers {
+		err := g.addFromReader(r)
+		if err != nil {
+			return g, err
+		}
+	}
+	return g, nil
 }
 
 // AddEdge adds an edge between two nodes with an optional weight that defaults to 1.0

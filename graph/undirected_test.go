@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,12 +9,30 @@ import (
 )
 
 func TestNewGraph(t *testing.T) {
-	g := NewGraph("test")
+	g, err := NewGraph("test")
+	assert.Nil(t, err)
 	assert.Equal(t, "test", g.Name)
+	assert.Empty(t, g.dirAdj)
+
+	reader := strings.NewReader("a b\na c 1.5\nc b 2.3")
+	g, err = NewGraph("test", reader)
+	assert.Nil(t, err)
+
+	assert.True(t, g.HasEdge("a", "b"))
+	ab, _ := g.GetEdgeWeight("a", "b")
+	assert.Equal(t, 1.0, ab)
+
+	assert.True(t, g.HasEdge("a", "c"))
+	ac, _ := g.GetEdgeWeight("a", "c")
+	assert.Equal(t, 1.5, ac)
+
+	assert.True(t, g.HasEdge("c", "b"))
+	cb, _ := g.GetEdgeWeight("c", "b")
+	assert.Equal(t, 2.3, cb)
 }
 
 func TestGraphAddEdge(t *testing.T) {
-	g := NewGraph("test")
+	g, _ := NewGraph("test")
 
 	// test adding edge with default weight
 	g.AddEdge("x", "y")
@@ -67,7 +86,7 @@ func TestGraphTestSuite(t *testing.T) {
 }
 
 func (suite *GraphTestSuite) SetupTest() {
-	suite.G = NewGraph("test")
+	suite.G, _ = NewGraph("test")
 	suite.G.AddEdge("a", "b", 1.5)
 	suite.G.AddEdge("a", "c", 2)
 	suite.G.AddEdge("b", "c", 3.3)
@@ -111,7 +130,7 @@ func (suite *GraphTestSuite) TestGraphGetNodes() {
 	}
 
 	// test result on empty graph
-	gEmpty := NewGraph("testEmpty")
+	gEmpty, _ := NewGraph("testEmpty")
 	nodes = gEmpty.GetNodes()
 	assert.Empty(suite.T(), nodes)
 }
