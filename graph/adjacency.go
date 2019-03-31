@@ -6,6 +6,7 @@ import (
 
 type dirAdj map[string]map[string]float64
 
+// Print prints the adjacency structure
 func (a dirAdj) Print() {
 	for node := range a {
 		fmt.Printf("%s:\n", node)
@@ -43,6 +44,7 @@ func (a dirAdj) getFromNodes() (nodes []string) {
 	return nodes
 }
 
+// GetNeighbors gets the nodes that a specified node connects to with an edge
 func (a dirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
 	adj, ok := a[node]
 	if !ok {
@@ -54,6 +56,7 @@ func (a dirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
 	return nbrs, true
 }
 
+// HasEdge returns true if an edge exists from a node to another node, false otherwise
 func (a dirAdj) HasEdge(from string, to string) bool {
 	nbrs, ok := a[from]
 	if !ok {
@@ -66,6 +69,7 @@ func (a dirAdj) HasEdge(from string, to string) bool {
 	return true
 }
 
+// GetEdgeWeight returns the weight of the edge from a node to another node if it exists
 func (a dirAdj) GetEdgeWeight(from string, to string) (weight float64, found bool) {
 	if a.HasEdge(from, to) {
 		w := a[from][to]
