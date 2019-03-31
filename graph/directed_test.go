@@ -1,6 +1,8 @@
 package graph
 
 import (
+	"bytes"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,13 +10,30 @@ import (
 )
 
 func TestNewDirGraph(t *testing.T) {
-	dg := NewDirGraph("test")
+	dg, err := NewDirGraph("test")
+	assert.Nil(t, err)
 	assert.Equal(t, "test", dg.Name)
 	assert.IsType(t, dirAdj{}, dg.invAdj)
+
+	reader := ioutil.NopCloser(bytes.NewReader([]byte("a b\na c 1.5\nc b 2.3")))
+	dg, err = NewDirGraph("test", reader)
+	assert.Nil(t, err)
+
+	assert.True(t, dg.HasEdge("a", "b"))
+	ab, _ := dg.GetEdgeWeight("a", "b")
+	assert.Equal(t, 1.0, ab)
+
+	assert.True(t, dg.HasEdge("a", "c"))
+	ac, _ := dg.GetEdgeWeight("a", "c")
+	assert.Equal(t, 1.5, ac)
+
+	assert.True(t, dg.HasEdge("c", "b"))
+	cb, _ := dg.GetEdgeWeight("c", "b")
+	assert.Equal(t, 2.3, cb)
 }
 
 func TestDirGraphAddEdge(t *testing.T) {
-	dg := NewDirGraph("test")
+	dg, _ := NewDirGraph("test")
 
 	// test adding edge with default weight
 	dg.AddEdge("x", "y")
@@ -50,7 +69,7 @@ func TestDirGraphTestSuite(t *testing.T) {
 }
 
 func (suite *DirGraphTestSuite) SetupTest() {
-	suite.DG = NewDirGraph("test")
+	suite.DG, _ = NewDirGraph("test")
 	suite.DG.AddEdge("a", "b", 1.5)
 	suite.DG.AddEdge("a", "c", 2)
 	suite.DG.AddEdge("b", "c", 3.3)
@@ -94,7 +113,7 @@ func (suite *DirGraphTestSuite) TestDirGraphGetNodes() {
 	}
 
 	// test result on empty graph
-	dgEmpty := NewDirGraph("testEmpty")
+	dgEmpty, _ := NewDirGraph("testEmpty")
 	nodes = dgEmpty.GetNodes()
 	assert.Empty(suite.T(), nodes)
 }

@@ -1,5 +1,9 @@
 package graph
 
+import (
+	"io"
+)
+
 // DirGraph is an adjacency map representation of a directed graph
 type DirGraph struct {
 	dirAdj
@@ -8,12 +12,19 @@ type DirGraph struct {
 }
 
 // NewDirGraph creates a new directed graph
-func NewDirGraph(name string) *DirGraph {
-	return &DirGraph{
+func NewDirGraph(name string, readers ...io.ReadCloser) (*DirGraph, error) {
+	dg := &DirGraph{
 		dirAdj: dirAdj{},
 		Name:   name,
 		invAdj: dirAdj{},
 	}
+	for _, r := range readers {
+		err := dg.addFromReader(r)
+		if err != nil {
+			return dg, err
+		}
+	}
+	return dg, nil
 }
 
 // AddEdge adds an edge from a node to another node with an optional weight that defaults to 1.0

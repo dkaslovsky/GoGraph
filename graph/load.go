@@ -2,15 +2,13 @@ package graph
 
 import (
 	"bufio"
+	"io"
 	"strconv"
 	"strings"
 )
 
-type reader interface {
-	Read([]byte) (int, error)
-}
-
-func (g *Graph) addFromReader(r reader) error {
+func (g *Graph) addFromReader(r io.ReadCloser) error {
+	defer r.Close()
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()
@@ -42,7 +40,8 @@ func (g *Graph) addFromReader(r reader) error {
 	return nil
 }
 
-func (dg *DirGraph) addFromReader(r reader) error {
+func (dg *DirGraph) addFromReader(r io.ReadCloser) error {
+	defer r.Close()
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := scanner.Text()

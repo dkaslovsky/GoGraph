@@ -1,5 +1,9 @@
 package graph
 
+import (
+	"io"
+)
+
 // Graph is a symmetric adjacency map representation of an undirected graph
 type Graph struct {
 	dirAdj
@@ -7,7 +11,7 @@ type Graph struct {
 }
 
 // NewGraph creates a new undirected graph
-func NewGraph(name string, readers ...reader) (*Graph, error) {
+func NewGraph(name string, readers ...io.ReadCloser) (*Graph, error) {
 	g := &Graph{
 		dirAdj: dirAdj{},
 		Name:   name,

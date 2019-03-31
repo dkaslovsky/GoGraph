@@ -1,7 +1,8 @@
 package graph
 
 import (
-	"strings"
+	"bytes"
+	"io/ioutil"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ func TestNewGraph(t *testing.T) {
 	assert.Equal(t, "test", g.Name)
 	assert.Empty(t, g.dirAdj)
 
-	reader := strings.NewReader("a b\na c 1.5\nc b 2.3")
+	reader := ioutil.NopCloser(bytes.NewReader([]byte("a b\na c 1.5\nc b 2.3")))
 	g, err = NewGraph("test", reader)
 	assert.Nil(t, err)
 
