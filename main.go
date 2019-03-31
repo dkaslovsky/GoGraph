@@ -18,7 +18,7 @@ func main() {
 
 	fmt.Print(g.Name)
 	fmt.Println("\nAdjacency:")
-	g.PrintAdj()
+	g.Print()
 	fmt.Println()
 
 	// directed graph
@@ -30,7 +30,7 @@ func main() {
 
 	fmt.Print(dg.Name)
 	fmt.Println("\nOut adjacency:")
-	dg.PrintOutAdj()
+	dg.Print()
 	fmt.Println("\nIn adjacency:")
-	dg.PrintInAdj()
+	dg.PrintInv()
 }
