@@ -10,7 +10,6 @@ import (
 func TestNewGraph(t *testing.T) {
 	g := NewGraph("test")
 	assert.Equal(t, "test", g.Name)
-	assert.IsType(t, dirAdj{}, g.dirAdj)
 }
 
 func TestGraphAddEdge(t *testing.T) {
@@ -83,6 +82,8 @@ func (suite *GraphTestSuite) TestGraphRemoveEdge() {
 	assert.False(suite.T(), suite.G.HasEdge("b", "a"))
 
 	// test removing edge that does not exist
+	assert.False(suite.T(), suite.G.HasEdge("a", "b"))
+	assert.False(suite.T(), suite.G.HasEdge("b", "a"))
 	suite.G.RemoveEdge("a", "b")
 	assert.False(suite.T(), suite.G.HasEdge("a", "b"))
 	assert.False(suite.T(), suite.G.HasEdge("b", "a"))
@@ -113,52 +114,6 @@ func (suite *GraphTestSuite) TestGraphGetNodes() {
 	gEmpty := NewGraph("testEmpty")
 	nodes = gEmpty.GetNodes()
 	assert.Empty(suite.T(), nodes)
-}
-
-func (suite *GraphTestSuite) TestGraphGetNeighbors() {
-	type testCase struct {
-		node    string
-		exists  bool
-		expNbrs []string
-	}
-	var table = map[string]testCase{
-		"get neighbors of node a": {
-			node:    "a",
-			exists:  true,
-			expNbrs: []string{"b", "c", "d"},
-		},
-		"get neighbors of node b": {
-			node:    "b",
-			exists:  true,
-			expNbrs: []string{"a", "c"},
-		},
-		"get neighbors of node c": {
-			node:    "c",
-			exists:  true,
-			expNbrs: []string{"a", "b", "d"},
-		},
-		"get neighbors of node d": {
-			node:    "d",
-			exists:  true,
-			expNbrs: []string{"a", "c"},
-		},
-		"get neighbors of nonexistent node": {
-			node:   "z",
-			exists: false,
-		},
-	}
-
-	for _, tt := range table {
-		nbrs, ok := suite.G.GetNeighbors(tt.node)
-		if !tt.exists {
-			assert.False(suite.T(), ok)
-			continue
-		}
-		assert.Len(suite.T(), nbrs, len(tt.expNbrs))
-		for _, n := range tt.expNbrs {
-			assert.Contains(suite.T(), nbrs, n)
-		}
-	}
 }
 
 func (suite *GraphTestSuite) TestGraphGetDegree() {
