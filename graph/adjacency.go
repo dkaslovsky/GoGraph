@@ -45,15 +45,9 @@ func (a dirAdj) getFromNodes() (nodes []string) {
 }
 
 // GetNeighbors gets the nodes that a specified node connects to with an edge
-func (a dirAdj) GetNeighbors(node string) (nbrs []string, found bool) {
+func (a dirAdj) GetNeighbors(node string) (nbrs map[string]float64, found bool) {
 	adj, ok := a[node]
-	if !ok {
-		return nbrs, false
-	}
-	for n := range adj {
-		nbrs = append(nbrs, n)
-	}
-	return nbrs, true
+	return adj, ok
 }
 
 // GetOutDegree calculates the sum of weights of all edges from a node
@@ -62,17 +56,15 @@ func (a dirAdj) GetOutDegree(node string) (deg float64, found bool) {
 	if !ok {
 		return deg, false
 	}
-	for _, n := range nbrs {
-		if w, ok := a.GetEdgeWeight(node, n); ok {
-			deg += w
-		}
+	for _, w := range nbrs {
+		deg += w
 	}
 	return deg, true
 }
 
 // HasEdge returns true if an edge exists from a node to another node, false otherwise
 func (a dirAdj) HasEdge(from string, to string) bool {
-	nbrs, ok := a[from]
+	nbrs, ok := a.GetNeighbors(from)
 	if !ok {
 		return false
 	}
