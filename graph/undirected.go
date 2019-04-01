@@ -17,8 +17,8 @@ func NewGraph(name string, readers ...io.ReadCloser) (*Graph, error) {
 		dirAdj: &dirAdj{},
 		Name:   name,
 	}
-	// undireted graph has symmetric adjacency structure so inverse adjacency is just
-	// a pointer to the adjacency map so we can match the API for directed graphs
+	// undireted graph has a symmetric adjacency structure so the inverse adjacency
+	// (inverted index) is just a pointer to the adjacency map
 	g.invAdj = g.dirAdj
 
 	for _, r := range readers {
