@@ -13,7 +13,8 @@ func TestNewDirGraph(t *testing.T) {
 	dg, err := NewDirGraph("test")
 	assert.Nil(t, err)
 	assert.Equal(t, "test", dg.Name)
-	assert.IsType(t, dirAdj{}, dg.invAdj)
+	assert.Empty(t, dg.dirAdj)
+	assert.Empty(t, dg.invAdj)
 
 	reader := ioutil.NopCloser(bytes.NewReader([]byte("a b\na c 1.5\nc b 2.3")))
 	dg, err = NewDirGraph("test", reader)

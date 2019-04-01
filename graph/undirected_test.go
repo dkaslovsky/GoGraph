@@ -142,7 +142,7 @@ func (suite *GraphTestSuite) TestGraphGetInvNeighbors() {
 		nbrs, ok := suite.G.GetInvNeighbors(node)
 		assert.True(suite.T(), ok)
 		expectedNbrs, _ := suite.G.GetNeighbors(node)
-		assert.ElementsMatch(suite.T(), expectedNbrs, nbrs)
+		assert.Equal(suite.T(), expectedNbrs, nbrs)
 	}
 }
 

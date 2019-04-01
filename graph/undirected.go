@@ -6,7 +6,7 @@ import (
 
 // Graph is a symmetric adjacency map representation of an undirected graph
 type Graph struct {
-	dirAdj
+	*dirAdj
 	Name   string
 	invAdj *dirAdj
 }
@@ -14,12 +14,12 @@ type Graph struct {
 // NewGraph creates a new undirected graph
 func NewGraph(name string, readers ...io.ReadCloser) (*Graph, error) {
 	g := &Graph{
-		dirAdj: dirAdj{},
+		dirAdj: &dirAdj{},
 		Name:   name,
 	}
 	// undireted graph has symmetric adjacency structure so inverse adjacency is just
 	// a pointer to the adjacency map so we can match the API for directed graphs
-	g.invAdj = &g.dirAdj
+	g.invAdj = g.dirAdj
 
 	for _, r := range readers {
 		err := g.addFromReader(r)
@@ -37,20 +37,20 @@ func (g *Graph) AddEdge(from string, to string, weight ...float64) {
 		wgt = weight[0]
 	}
 	g.addDirectedEdge(from, to, wgt)
-	g.addDirectedEdge(to, from, wgt)
+	g.invAdj.addDirectedEdge(to, from, wgt)
 }
 
 // RemoveEdge removes an edge between two nodes
 func (g *Graph) RemoveEdge(from string, to string) {
 	g.removeDirectedEdge(from, to)
-	g.removeDirectedEdge(to, from)
+	g.invAdj.removeDirectedEdge(to, from)
 }
 
 // RemoveNode removes a node entirely from a Graph such that
 // no edges exist between it an any other node
 func (g *Graph) RemoveNode(node string) {
 	if nbrs, ok := g.GetNeighbors(node); ok {
-		for _, n := range nbrs {
+		for n := range nbrs {
 			g.RemoveEdge(node, n)
 		}
 	}
@@ -67,7 +67,7 @@ func (g *Graph) GetNodes() (nodes []string) {
 }
 
 // GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
-func (g *Graph) GetInvNeighbors(node string) (nbrs []string, found bool) {
+func (g *Graph) GetInvNeighbors(node string) (nbrs map[string]float64, found bool) {
 	return g.invAdj.GetNeighbors(node)
 }
 
