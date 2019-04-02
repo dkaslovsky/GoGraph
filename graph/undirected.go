@@ -62,26 +62,26 @@ func (g *Graph) PrintInv() {
 }
 
 // GetNodes gets a slice of all nodes in a Graph
-func (g *Graph) GetNodes() (nodes []string) {
+func (g *Graph) GetNodes() []string {
 	return g.getSrcNodes()
 }
 
 // GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
-func (g *Graph) GetInvNeighbors(node string) (nbrs map[string]float64, found bool) {
+func (g *Graph) GetInvNeighbors(node string) (map[string]float64, bool) {
 	return g.invAdj.GetNeighbors(node)
 }
 
 // GetTotalDegree calculates the sum of weights of all edges with node as the source node
-func (g *Graph) GetTotalDegree(node string) (deg float64, found bool) {
+func (g *Graph) GetTotalDegree(node string) (float64, bool) {
 	return g.GetOutDegree(node)
 }
 
 // GetDegree calculates the sum of weights of all edges with node as the source node
-func (g *Graph) GetDegree(node string) (deg float64, found bool) {
+func (g *Graph) GetDegree(node string) (float64, bool) {
 	return g.GetOutDegree(node)
 }
 
 // GetInDegree calculates the sum of weights of all edges with node as the target node
-func (g *Graph) GetInDegree(node string) (deg float64, found bool) {
+func (g *Graph) GetInDegree(node string) (float64, bool) {
 	return g.invAdj.GetOutDegree(node)
 }
