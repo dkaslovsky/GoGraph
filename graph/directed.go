@@ -47,7 +47,7 @@ func (dg *DirGraph) RemoveNode(node string) {
 // GetNodes gets a slice of all nodes in a DirGraph
 func (dg *DirGraph) GetNodes() (nodes []string) {
 
-	nodes = dg.getFromNodes() // guaranteed to be unique
+	nodes = dg.getSrcNodes() // guaranteed to be unique
 
 	// maintain map keyed by nodes to avoid adding duplicates from invAdj
 	set := map[string]struct{}{}
@@ -56,7 +56,7 @@ func (dg *DirGraph) GetNodes() (nodes []string) {
 	}
 
 	// append invAdj node only if it is not in the set
-	invNodes := dg.invAdj.getFromNodes() // guaranteed to be unique
+	invNodes := dg.invAdj.getSrcNodes() // guaranteed to be unique
 	for _, node := range invNodes {
 		if _, ok := set[node]; !ok {
 			nodes = append(nodes, node)

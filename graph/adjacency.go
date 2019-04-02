@@ -17,27 +17,27 @@ func (a dirAdj) Print() {
 	}
 }
 
-func (a dirAdj) addDirectedEdge(from string, to string, wgt float64) {
-	if nbrs, ok := a[from]; ok {
-		nbrs[to] = wgt
+func (a dirAdj) addDirectedEdge(src string, tgt string, wgt float64) {
+	if nbrs, ok := a[src]; ok {
+		nbrs[tgt] = wgt
 		return
 	}
-	a[from] = map[string]float64{to: wgt}
+	a[src] = map[string]float64{tgt: wgt}
 }
 
-func (a dirAdj) removeDirectedEdge(from string, to string) {
-	nbrs, ok := a[from]
+func (a dirAdj) removeDirectedEdge(src string, tgt string) {
+	nbrs, ok := a[src]
 	if !ok {
 		return
 	}
-	delete(nbrs, to)
-	// delete from node if it no longer has neighbors
+	delete(nbrs, tgt)
+	// delete src node if it no longer has neighbors
 	if len(nbrs) == 0 {
-		delete(a, from)
+		delete(a, src)
 	}
 }
 
-func (a dirAdj) getFromNodes() (nodes []string) {
+func (a dirAdj) getSrcNodes() (nodes []string) {
 	for node := range a {
 		nodes = append(nodes, node)
 	}
@@ -50,7 +50,7 @@ func (a dirAdj) GetNeighbors(node string) (nbrs map[string]float64, found bool) 
 	return adj, ok
 }
 
-// GetOutDegree calculates the sum of weights of all edges from a node
+// GetOutDegree calculates the sum of weights of all edges with node as the source node
 func (a dirAdj) GetOutDegree(node string) (deg float64, found bool) {
 	nbrs, ok := a.GetNeighbors(node)
 	if !ok {
@@ -63,12 +63,12 @@ func (a dirAdj) GetOutDegree(node string) (deg float64, found bool) {
 }
 
 // HasEdge returns true if an edge exists from a node to another node, false otherwise
-func (a dirAdj) HasEdge(from string, to string) bool {
-	nbrs, ok := a.GetNeighbors(from)
+func (a dirAdj) HasEdge(src string, tgt string) bool {
+	nbrs, ok := a.GetNeighbors(src)
 	if !ok {
 		return false
 	}
-	_, ok = nbrs[to]
+	_, ok = nbrs[tgt]
 	if !ok {
 		return false
 	}
@@ -76,9 +76,9 @@ func (a dirAdj) HasEdge(from string, to string) bool {
 }
 
 // GetEdgeWeight returns the weight of the edge from a node to another node if it exists
-func (a dirAdj) GetEdgeWeight(from string, to string) (weight float64, found bool) {
-	if a.HasEdge(from, to) {
-		w := a[from][to]
+func (a dirAdj) GetEdgeWeight(src string, tgt string) (weight float64, found bool) {
+	if a.HasEdge(src, tgt) {
+		w := a[src][tgt]
 		return w, true
 	}
 	return weight, false

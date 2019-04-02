@@ -31,19 +31,19 @@ func NewGraph(name string, readers ...io.ReadCloser) (*Graph, error) {
 }
 
 // AddEdge adds an edge between two nodes with an optional weight that defaults to 1.0
-func (g *Graph) AddEdge(from string, to string, weight ...float64) {
+func (g *Graph) AddEdge(src string, tgt string, weight ...float64) {
 	wgt := 1.0
 	if len(weight) > 0 {
 		wgt = weight[0]
 	}
-	g.addDirectedEdge(from, to, wgt)
-	g.invAdj.addDirectedEdge(to, from, wgt)
+	g.addDirectedEdge(src, tgt, wgt)
+	g.invAdj.addDirectedEdge(tgt, src, wgt)
 }
 
 // RemoveEdge removes an edge between two nodes
-func (g *Graph) RemoveEdge(from string, to string) {
-	g.removeDirectedEdge(from, to)
-	g.invAdj.removeDirectedEdge(to, from)
+func (g *Graph) RemoveEdge(src string, tgt string) {
+	g.removeDirectedEdge(src, tgt)
+	g.invAdj.removeDirectedEdge(tgt, src)
 }
 
 // RemoveNode removes a node entirely from a Graph such that
@@ -63,7 +63,7 @@ func (g *Graph) PrintInv() {
 
 // GetNodes gets a slice of all nodes in a Graph
 func (g *Graph) GetNodes() (nodes []string) {
-	return g.getFromNodes()
+	return g.getSrcNodes()
 }
 
 // GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
@@ -71,17 +71,17 @@ func (g *Graph) GetInvNeighbors(node string) (nbrs map[string]float64, found boo
 	return g.invAdj.GetNeighbors(node)
 }
 
-// GetTotalDegree calculates the sum of weights of all edges from and to a node
+// GetTotalDegree calculates the sum of weights of all edges with node as the source node
 func (g *Graph) GetTotalDegree(node string) (deg float64, found bool) {
 	return g.GetOutDegree(node)
 }
 
-// GetDegree calculates the sum of weights of all edges of a node
+// GetDegree calculates the sum of weights of all edges with node as the source node
 func (g *Graph) GetDegree(node string) (deg float64, found bool) {
 	return g.GetOutDegree(node)
 }
 
-// GetInDegree calculates the sum of weights of all edges to a node
+// GetInDegree calculates the sum of weights of all edges with node as the target node
 func (g *Graph) GetInDegree(node string) (deg float64, found bool) {
 	return g.invAdj.GetOutDegree(node)
 }

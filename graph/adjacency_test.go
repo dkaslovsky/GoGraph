@@ -81,14 +81,14 @@ func (suite *DirAdjTestSuite) TestRemoveDirectedEdge() {
 	assert.Contains(suite.T(), yNbrs, "x", "node x should still be a neighbor of node y")
 }
 
-func (suite *DirAdjTestSuite) TestGetFromNodes() {
-	nodes := suite.A.getFromNodes()
+func (suite *DirAdjTestSuite) TestGetSrcNodes() {
+	nodes := suite.A.getSrcNodes()
 	expectedNodes := []string{"x", "y", "z"}
 	assert.ElementsMatch(suite.T(), expectedNodes, nodes)
 
 	// test empty dirAdj
 	aEmpty := dirAdj{}
-	nodes = aEmpty.getFromNodes()
+	nodes = aEmpty.getSrcNodes()
 	assert.Empty(suite.T(), nodes)
 }
 
