@@ -17,21 +17,22 @@ func (g *Graph) addFromReader(r io.ReadCloser) error {
 			continue
 		}
 
-		from := parts[0]
-		to := parts[1]
-		if from == "" || to == "" {
+		src := parts[0]
+		tgt := parts[1]
+		if src == "" || tgt == "" {
 			continue
 		}
 
 		if len(parts) == 2 {
-			g.AddEdge(from, to)
-		} else {
-			weight, err := strconv.ParseFloat(parts[2], 64)
-			if err != nil {
-				return err
-			}
-			g.AddEdge(from, to, weight)
+			g.AddEdge(src, tgt)
+			continue
 		}
+
+		weight, err := strconv.ParseFloat(parts[2], 64)
+		if err != nil {
+			return err
+		}
+		g.AddEdge(src, tgt, weight)
 	}
 
 	if err := scanner.Err(); err != nil {

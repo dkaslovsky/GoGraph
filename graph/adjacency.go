@@ -69,10 +69,7 @@ func (a dirAdj) HasEdge(src string, tgt string) bool {
 		return false
 	}
 	_, ok = nbrs[tgt]
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 // GetEdgeWeight returns the weight of the edge from a node to another node if it exists
@@ -80,6 +77,6 @@ func (a dirAdj) GetEdgeWeight(src string, tgt string) (weight float64, found boo
 	if !a.HasEdge(src, tgt) {
 		return weight, false
 	}
-	w := a[src][tgt]
-	return w, true
+	weight = a[src][tgt]
+	return weight, true
 }
