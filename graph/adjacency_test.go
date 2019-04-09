@@ -9,11 +9,6 @@ import (
 type edge struct {
 	src string
 	tgt string
-}
-
-type weightedEdge struct {
-	src string
-	tgt string
 	wgt float64
 }
 
@@ -28,19 +23,19 @@ func setupAdj() dirAdj {
 func TestAddDirectedEdge(t *testing.T) {
 	tests := map[string]struct {
 		a dirAdj
-		e weightedEdge
+		e edge
 	}{
 		"add edge with integer weight": {
 			dirAdj{},
-			weightedEdge{src: "a", tgt: "b", wgt: 1},
+			edge{src: "a", tgt: "b", wgt: 1},
 		},
 		"add edge with float weight": {
 			dirAdj{},
-			weightedEdge{src: "a", tgt: "b", wgt: 3.4},
+			edge{src: "a", tgt: "b", wgt: 3.4},
 		},
 		"upsert edge": {
 			dirAdj{"a": {"b": 3.4}},
-			weightedEdge{src: "a", tgt: "b", wgt: 10.10},
+			edge{src: "a", tgt: "b", wgt: 10.10},
 		},
 	}
 
@@ -55,7 +50,7 @@ func TestAddDirectedEdge(t *testing.T) {
 			assert.True(t, ok)
 			assert.Contains(t, nbrs, e.tgt)
 			// test weight
-			wgt, ok := nbrs[e.tgt]
+			wgt, _ := nbrs[e.tgt]
 			assert.Equal(t, float64(e.wgt), wgt)
 		})
 	}
@@ -63,10 +58,9 @@ func TestAddDirectedEdge(t *testing.T) {
 
 func TestRemoveDirectedEdge(t *testing.T) {
 	tests := map[string]struct {
-		src            string
-		tgts           []string
-		tgtsRemaining  []string
-		srcStillExists bool
+		src           string
+		tgts          []string
+		tgtsRemaining []string
 	}{
 		"remove nonexistent edge from existing node": {
 			src:           "x",
