@@ -4,137 +4,107 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 )
 
+type edge struct {
+	src string
+	tgt string
+}
+
+type weightedEdge struct {
+	src string
+	tgt string
+	wgt float64
+}
+
+func setupAdj() dirAdj {
+	return dirAdj{
+		"x": {"y": 1, "z": 1},
+		"y": {"x": 1, "z": 1},
+		"z": {"x": 2.2},
+	}
+}
+
 func TestAddDirectedEdge(t *testing.T) {
-	a := dirAdj{}
-
-	// test adding edge with default weight
-	a.addDirectedEdge("x", "y", 1)
-	xNbrs, xExists := a["x"]
-	assert.True(t, xExists, "node x should exist in adjacency")
-	assert.Len(t, xNbrs, 1, "node x should have 1 neighbor")
-	w, yExists := xNbrs["y"]
-	assert.True(t, yExists, "node y should x's neighbor")
-	assert.Equal(t, 1.0, w, "edge from x to y should have weight 1")
-
-	// test adding (upserting) edge with specified weight
-	wgt := 3.7
-	a.addDirectedEdge("x", "y", wgt)
-	w = xNbrs["y"]
-	assert.Equal(t, wgt, w, "edge from x to y should have weight 1")
-}
-
-type DirAdjTestSuite struct {
-	suite.Suite
-	A dirAdj
-}
-
-func TestDirAdjTestSuite(t *testing.T) {
-	suite.Run(t, new(DirAdjTestSuite))
-}
-
-func (suite *DirAdjTestSuite) SetupTest() {
-	suite.A = dirAdj{}
-	suite.A.addDirectedEdge("x", "y", 1)
-	suite.A.addDirectedEdge("x", "z", 1)
-	suite.A.addDirectedEdge("y", "x", 1)
-	suite.A.addDirectedEdge("y", "z", 1)
-	suite.A.addDirectedEdge("z", "x", 1)
-}
-
-func (suite *DirAdjTestSuite) TestRemoveDirectedEdge() {
-	// test removing nonexistent edge from existing node
-	suite.A.removeDirectedEdge("x", "foo")
-	xNbrs, xExists := suite.A["x"]
-	assert.True(suite.T(), xExists, "node x should still exist in adjacency")
-	assert.Len(suite.T(), xNbrs, 2, "node x should still have 2 neighbors")
-	assert.Contains(suite.T(), xNbrs, "y", "node y should still be neighbor of x")
-	assert.Contains(suite.T(), xNbrs, "z", "node z should still be neighbor of x")
-
-	// test removing nonexistent edge from nonexisting node
-	AOrig := dirAdj{}
-	for outerK, outerV := range suite.A {
-		AOrig[outerK] = outerV
+	tests := map[string]struct {
+		a dirAdj
+		e weightedEdge
+	}{
+		"add edge with integer weight": {
+			dirAdj{},
+			weightedEdge{src: "a", tgt: "b", wgt: 1},
+		},
+		"add edge with float weight": {
+			dirAdj{},
+			weightedEdge{src: "a", tgt: "b", wgt: 3.4},
+		},
+		"upsert edge": {
+			dirAdj{"a": {"b": 3.4}},
+			weightedEdge{src: "a", tgt: "b", wgt: 10.10},
+		},
 	}
-	suite.A.removeDirectedEdge("foo", "bar")
-	assert.Equal(suite.T(), AOrig, suite.A, "adjacency should be unchanged")
 
-	// test removing existing edge
-	suite.A.removeDirectedEdge("x", "w")
-	xNbrs = suite.A["x"]
-	assert.Len(suite.T(), xNbrs, 2, "node x should have 2 remaining neighbors")
-	_, wExists := xNbrs["w"]
-	assert.False(suite.T(), wExists, "node x should no longer have w as a neighbor")
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			a := test.a
+			e := test.e
+			a.addDirectedEdge(e.src, e.tgt, e.wgt)
 
-	// test removing edge leaving no neighbors deletes the from node
-	xNbrs = suite.A["x"]
-	for n := range xNbrs {
-		suite.A.removeDirectedEdge("x", n)
+			// test edge exists
+			nbrs, ok := a[e.src]
+			assert.True(t, ok)
+			assert.Contains(t, nbrs, e.tgt)
+			// test weight
+			wgt, ok := nbrs[e.tgt]
+			assert.Equal(t, float64(e.wgt), wgt)
+		})
 	}
-	_, xExists = suite.A["x"]
-	assert.False(suite.T(), xExists, "node x should no longer be a key once all neighbors removed")
-	// y should still have an edge to x
-	yNbrs, yExists := suite.A["y"]
-	assert.True(suite.T(), yExists, "node y should still be a key")
-	assert.Contains(suite.T(), yNbrs, "x", "node x should still be a neighbor of node y")
 }
 
-func (suite *DirAdjTestSuite) TestGetSrcNodes() {
-	nodes := suite.A.getSrcNodes()
-	expectedNodes := []string{"x", "y", "z"}
-	assert.ElementsMatch(suite.T(), expectedNodes, nodes)
+func TestRemoveDirectedEdge(t *testing.T) {
+	tests := map[string]struct {
+		src            string
+		tgts           []string
+		tgtsRemaining  []string
+		srcStillExists bool
+	}{
+		"remove nonexistent edge from existing node": {
+			src:           "x",
+			tgts:          []string{"foo"},
+			tgtsRemaining: []string{"y", "z"},
+		},
+		"remove nonexistent edge from nonexistent node": {
+			src:  "foo",
+			tgts: []string{"bar"},
+		},
+		"remove existing edge": {
+			src:           "x",
+			tgts:          []string{"y"},
+			tgtsRemaining: []string{"z"},
+		},
+		"remove all edges from node": {
+			src:  "y",
+			tgts: []string{"x", "z"},
+		},
+	}
 
-	// test empty dirAdj
-	aEmpty := dirAdj{}
-	nodes = aEmpty.getSrcNodes()
-	assert.Empty(suite.T(), nodes)
-}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			a := setupAdj()
+			src := test.src
+			for _, tgt := range test.tgts {
+				a.removeDirectedEdge(src, tgt)
+			}
 
-func (suite *DirAdjTestSuite) TestGetNeighbors() {
-	// test get neighbors for nonexistent node
-	_, vExists := suite.A.GetNeighbors("v")
-	assert.False(suite.T(), vExists, "node v should not exist")
-
-	// test get neighbors for existing node
-	xNbrs, xExists := suite.A.GetNeighbors("x")
-	assert.True(suite.T(), xExists, "node x should have neighbors")
-	assert.Len(suite.T(), xNbrs, 2, "node x should have 2 neighbors")
-	assert.Contains(suite.T(), xNbrs, "y", "node y should be a neighbor of node x")
-	assert.Contains(suite.T(), xNbrs, "z", "node z should be a neighbor of node x")
-}
-
-func (suite *DirAdjTestSuite) TestDirAdjGetOutDegree() {
-	suite.A.addDirectedEdge("a", "b", 2.1)
-	suite.A.addDirectedEdge("a", "c", 3.0)
-	suite.A.addDirectedEdge("b", "a", 8.9)
-	suite.A.addDirectedEdge("b", "c", 2.0)
-
-	d, ok := suite.A.GetOutDegree("a")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 5.1, d)
-
-	d, ok = suite.A.GetOutDegree("b")
-	assert.True(suite.T(), ok)
-	assert.Equal(suite.T(), 10.9, d)
-
-	_, ok = suite.A.GetOutDegree("foo")
-	assert.False(suite.T(), ok)
-}
-
-func (suite *DirAdjTestSuite) TestHasEdge() {
-	assert.True(suite.T(), suite.A.HasEdge("x", "y"), "edge should exist between x and y")
-	assert.False(suite.T(), suite.A.HasEdge("w", "y"), "edge should not exist between w and y")
-}
-
-func (suite *DirAdjTestSuite) TestGetEdgeWeight() {
-	suite.A.addDirectedEdge("a", "b", 2.1)
-
-	ab, found := suite.A.GetEdgeWeight("a", "b")
-	assert.True(suite.T(), found, "edge should exists between a and b")
-	assert.Equal(suite.T(), 2.1, ab, "edge between a and b should have weight 2.1")
-
-	_, found = suite.A.GetEdgeWeight("b", "a")
-	assert.False(suite.T(), found, "edge should not exist between b and a")
+			nbrs, ok := a[src]
+			if len(test.tgtsRemaining) == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			for _, tgt := range test.tgtsRemaining {
+				assert.Contains(t, nbrs, tgt)
+			}
+		})
+	}
 }
