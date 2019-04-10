@@ -6,12 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type edge struct {
-	src string
-	tgt string
-	wgt float64
-}
-
 func setupAdj() dirAdj {
 	return dirAdj{
 		"x": {"y": 1, "z": 1},
@@ -21,6 +15,12 @@ func setupAdj() dirAdj {
 }
 
 func TestAddDirectedEdge(t *testing.T) {
+	type edge struct {
+		src string
+		tgt string
+		wgt float64
+	}
+
 	tests := map[string]struct {
 		a dirAdj
 		e edge
@@ -85,20 +85,49 @@ func TestRemoveDirectedEdge(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			a := setupAdj()
-			src := test.src
 			for _, tgt := range test.tgts {
-				a.removeDirectedEdge(src, tgt)
+				a.removeDirectedEdge(test.src, tgt)
 			}
 
-			nbrs, ok := a[src]
+			nbrs, ok := a[test.src]
+			// src should be removed if no target nodes remain
 			if len(test.tgtsRemaining) == 0 {
 				assert.False(t, ok)
 				return
 			}
 			assert.True(t, ok)
+
+			// test that only the specified nodes were removed
+			// and the other remain
+			for _, tgt := range test.tgts {
+				assert.NotContains(t, nbrs, tgt)
+			}
 			for _, tgt := range test.tgtsRemaining {
 				assert.Contains(t, nbrs, tgt)
 			}
+		})
+	}
+}
+
+func TestGetSrcNodes(t *testing.T) {
+	tests := map[string]struct {
+		a             dirAdj
+		expectedNodes []string
+	}{
+		"empty adjacency": {
+			a:             dirAdj{},
+			expectedNodes: []string{},
+		},
+		"nonempty adjacency": {
+			a:             setupAdj(),
+			expectedNodes: []string{"x", "y", "z"},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nodes := test.a.getSrcNodes()
+			assert.ElementsMatch(t, nodes, test.expectedNodes)
 		})
 	}
 }
