@@ -6,10 +6,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// float64EqualTol is the tolerance at which we consider float64s equal
+const float64EqualTol = 1e-9
+
 func setupAdj() dirAdj {
 	return dirAdj{
 		"x": {"y": 1, "z": 1},
-		"y": {"x": 1, "z": 1},
+		"y": {"x": 3.2, "z": 9.7},
 		"z": {"x": 2.2},
 	}
 }
@@ -128,6 +131,158 @@ func TestGetSrcNodes(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			nodes := test.a.getSrcNodes()
 			assert.ElementsMatch(t, nodes, test.expectedNodes)
+		})
+	}
+}
+
+func TestGetNeighbors(t *testing.T) {
+	tests := map[string]struct {
+		node         string
+		expectedNbrs []string
+	}{
+		"nonexistent node": {
+			node:         "a",
+			expectedNbrs: []string{},
+		},
+		"existing node": {
+			node:         "x",
+			expectedNbrs: []string{"y", "z"},
+		},
+	}
+
+	a := setupAdj()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nbrs, ok := a.GetNeighbors(test.node)
+			if len(test.expectedNbrs) == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			for n := range nbrs {
+				assert.Contains(t, test.expectedNbrs, n)
+			}
+		})
+	}
+}
+
+func TestGetOutDegree(t *testing.T) {
+	tests := map[string]struct {
+		node        string
+		expectedDeg float64
+	}{
+		"nonexistent node": {
+			node: "a",
+		},
+		"existing node multiple neighbors": {
+			node:        "y",
+			expectedDeg: 12.9,
+		},
+		"existing node single neighbor": {
+			node:        "z",
+			expectedDeg: 2.2,
+		},
+	}
+
+	a := setupAdj()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, ok := a.GetOutDegree(test.node)
+			if test.expectedDeg == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.InEpsilon(t, test.expectedDeg, d, float64EqualTol)
+		})
+	}
+}
+
+func TestHasEdge(t *testing.T) {
+	tests := map[string]struct {
+		src    string
+		tgt    string
+		exists bool
+	}{
+		"nonexistent edge between nonexistent nodes": {
+			src:    "a",
+			tgt:    "b",
+			exists: false,
+		},
+		"nonexistent edge from existing node to nonexistent node": {
+			src:    "x",
+			tgt:    "a",
+			exists: false,
+		},
+		"nonexistent edge from nonexistent node to existing node": {
+			src:    "a",
+			tgt:    "x",
+			exists: false,
+		},
+		"nonexistent edge between existing nodes": {
+			src:    "z",
+			tgt:    "y",
+			exists: false,
+		},
+		"existing edge": {
+			src:    "z",
+			tgt:    "x",
+			exists: true,
+		},
+	}
+
+	a := setupAdj()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			exists := a.HasEdge(test.src, test.tgt)
+			assert.Equal(t, test.exists, exists)
+		})
+	}
+}
+
+func TestGetEdgeWeight(t *testing.T) {
+	tests := map[string]struct {
+		src    string
+		tgt    string
+		weight float64
+	}{
+		"nonexistent edge between nonexistent nodes": {
+			src: "a",
+			tgt: "b",
+		},
+		"nonexistent edge from existing node to nonexistent node": {
+			src: "x",
+			tgt: "a",
+		},
+		"nonexistent edge from nonexistent node to existing node": {
+			src: "a",
+			tgt: "x",
+		},
+		"nonexistent edge between existing nodes": {
+			src: "z",
+			tgt: "y",
+		},
+		"existing edge": {
+			src:    "x",
+			tgt:    "y",
+			weight: 1,
+		},
+		"existing edge reversed direction": {
+			src:    "y",
+			tgt:    "x",
+			weight: 3.2,
+		},
+	}
+
+	a := setupAdj()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			weight, ok := a.GetEdgeWeight(test.src, test.tgt)
+			if test.weight == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			assert.Equal(t, test.weight, weight)
 		})
 	}
 }
