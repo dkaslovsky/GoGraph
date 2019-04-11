@@ -26,7 +26,7 @@ func TestAddDirectedEdge(t *testing.T) {
 
 	tests := map[string]struct {
 		a dirAdj
-		e edge
+		edge
 	}{
 		"add edge with integer weight": {
 			dirAdj{},
@@ -45,16 +45,15 @@ func TestAddDirectedEdge(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			a := test.a
-			e := test.e
-			a.addDirectedEdge(e.src, e.tgt, e.wgt)
+			a.addDirectedEdge(test.src, test.tgt, test.wgt)
 
 			// test edge exists
-			nbrs, ok := a[e.src]
+			nbrs, ok := a[test.src]
 			assert.True(t, ok)
-			assert.Contains(t, nbrs, e.tgt)
+			assert.Contains(t, nbrs, test.tgt)
 			// test weight
-			wgt, _ := nbrs[e.tgt]
-			assert.Equal(t, float64(e.wgt), wgt)
+			wgt, _ := nbrs[test.tgt]
+			assert.Equal(t, float64(test.wgt), wgt)
 		})
 	}
 }
