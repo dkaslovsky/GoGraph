@@ -192,6 +192,7 @@ func TestGetOutDegree(t *testing.T) {
 				assert.False(t, ok)
 				return
 			}
+			assert.True(t, ok)
 			assert.InEpsilon(t, test.expectedDeg, d, float64EqualTol)
 		})
 	}

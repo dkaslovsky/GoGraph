@@ -8,9 +8,8 @@ type dirAdj map[string]map[string]float64
 
 // Print prints the adjacency structure
 func (a dirAdj) Print() {
-	for node := range a {
+	for node, nbrs := range a {
 		fmt.Printf("%s:\n", node)
-		nbrs := a[node]
 		for n, wgt := range nbrs {
 			fmt.Printf(" -->  %s: %f\n", n, wgt)
 		}
