@@ -25,12 +25,27 @@ func setupTestGraph() *testGraph {
 }
 
 func (te testEdge) symmetricExistsIn(a dirAdj) bool {
-	// test edge from src to tgt
+	return te.existsIn(a) && te.reverseExistsIn(a)
+}
+
+func (te testEdge) existsIn(a dirAdj) bool {
 	n, ok := a[te.src]
 	if !ok {
 		return false
 	}
 	w, ok := n[te.tgt]
+	if !ok {
+		return false
+	}
+	return w == te.wgt
+}
+
+func (te testEdge) reverseExistsIn(a dirAdj) bool {
+	n, ok := a[te.tgt]
+	if !ok {
+		return false
+	}
+	w, ok := n[te.src]
 	if !ok {
 		return false
 	}
