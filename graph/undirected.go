@@ -7,6 +7,9 @@ import (
 	"strings"
 )
 
+// defaultWgt is the weight applied to an edge when a weight is not specified
+const defaultWgt float64 = 1.0
+
 // Graph is a symmetric adjacency map representation of an undirected graph
 type Graph struct {
 	*dirAdj
@@ -69,7 +72,7 @@ func (g *Graph) addFromReader(r io.ReadCloser) error {
 
 // AddEdge adds an edge between two nodes with an optional weight that defaults to 1.0
 func (g *Graph) AddEdge(src string, tgt string, weight ...float64) {
-	wgt := 1.0
+	wgt := defaultWgt
 	if len(weight) > 0 {
 		wgt = weight[0]
 	}

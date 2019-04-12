@@ -9,6 +9,12 @@ import (
 // float64EqualTol is the tolerance at which we consider float64s equal
 const float64EqualTol = 1e-9
 
+type testEdge struct {
+	src string
+	tgt string
+	wgt float64
+}
+
 func setupAdj() dirAdj {
 	return dirAdj{
 		"x": {"y": 1, "z": 1},
@@ -18,27 +24,21 @@ func setupAdj() dirAdj {
 }
 
 func TestAddDirectedEdge(t *testing.T) {
-	type edge struct {
-		src string
-		tgt string
-		wgt float64
-	}
-
 	tests := map[string]struct {
 		a dirAdj
-		edge
+		testEdge
 	}{
 		"add edge with integer weight": {
 			dirAdj{},
-			edge{src: "a", tgt: "b", wgt: 1},
+			testEdge{src: "a", tgt: "b", wgt: 1},
 		},
 		"add edge with float weight": {
 			dirAdj{},
-			edge{src: "a", tgt: "b", wgt: 3.4},
+			testEdge{src: "a", tgt: "b", wgt: 3.4},
 		},
 		"upsert edge": {
 			dirAdj{"a": {"b": 3.4}},
-			edge{src: "a", tgt: "b", wgt: 10.10},
+			testEdge{src: "a", tgt: "b", wgt: 10.10},
 		},
 	}
 
@@ -99,8 +99,8 @@ func TestRemoveDirectedEdge(t *testing.T) {
 			}
 			assert.True(t, ok)
 
-			// test that only the specified nodes were removed
-			// and the other remain
+			// test that only the specified nodes were
+			// removed and the others remain
 			for _, tgt := range test.tgts {
 				assert.NotContains(t, nbrs, tgt)
 			}
@@ -187,6 +187,7 @@ func TestGetOutDegree(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			d, ok := a.GetOutDegree(test.node)
+			// node does not exist
 			if test.expectedDeg == 0 {
 				assert.False(t, ok)
 				return
@@ -277,6 +278,7 @@ func TestGetEdgeWeight(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			weight, ok := a.GetEdgeWeight(test.src, test.tgt)
+			// no edge present
 			if test.weight == 0 {
 				assert.False(t, ok)
 				return
