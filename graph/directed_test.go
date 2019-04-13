@@ -15,9 +15,9 @@ type testDirGraph struct {
 }
 
 func setupTestDirGraph() *testDirGraph {
-	nodes := []string{"a", "b", "c"}
+	nodes := []string{"a", "b", "c", "d"}
 	invNodes := []string{"a", "b", "c", "d"}
-	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7")
+	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\na d 19")
 	reader := ioutil.NopCloser(bytes.NewReader(edges))
 	dg, _ := NewDirGraph("test", reader)
 	return &testDirGraph{
@@ -55,8 +55,8 @@ func TestNewDirGraph(t *testing.T) {
 		a := *dg.dirAdj
 		invA := *dg.invAdj
 		for _, e := range edges {
-			assert.True(t, e.existsIn(a))
-			assert.True(t, e.reverseExistsIn(invA))
+			assert.True(t, a.HasEdge(e.src, e.tgt))
+			assert.True(t, invA.HasEdge(e.tgt, e.src))
 		}
 	})
 }
@@ -95,8 +95,8 @@ func TestDirGraphAddEdgeDefaultWeight(t *testing.T) {
 			tg := setupTestDirGraph()
 			dg := tg.dg
 			dg.AddEdge(test.src, test.tgt)
-			assert.True(t, test.existsIn(*dg.dirAdj))
-			assert.True(t, test.reverseExistsIn(*dg.invAdj))
+			assert.True(t, dg.dirAdj.HasEdge(test.src, test.tgt))
+			assert.True(t, dg.invAdj.HasEdge(test.tgt, test.src))
 		})
 	}
 }
@@ -135,29 +135,51 @@ func TestDirGraphAddEdgeNonDefaultWeight(t *testing.T) {
 			tg := setupTestDirGraph()
 			dg := tg.dg
 			dg.AddEdge(test.src, test.tgt, test.wgt)
-			assert.True(t, test.existsIn(*dg.dirAdj))
-			assert.True(t, test.reverseExistsIn(*dg.invAdj))
+			assert.True(t, dg.dirAdj.HasEdge(test.src, test.tgt))
+			assert.True(t, dg.invAdj.HasEdge(test.tgt, test.src))
 		})
 	}
 }
 
 func TestDirGraphRemoveEdge(t *testing.T) {
-	tests := map[string]testEdge{
+	tests := map[string]struct {
+		testEdge
+		reverseExists bool
+	}{
 		"remove nonexistent edge": {
-			src: "x",
-			tgt: "y",
+			testEdge: testEdge{
+				src: "x",
+				tgt: "y",
+			},
+			reverseExists: false,
 		},
 		"remove nonexistent edge, src exists": {
-			src: "a",
-			tgt: "y",
+			testEdge: testEdge{
+				src: "a",
+				tgt: "y",
+			},
+			reverseExists: false,
 		},
 		"remove nonexistent edge, tgt exists": {
-			src: "x",
-			tgt: "a",
+			testEdge: testEdge{
+				src: "x",
+				tgt: "a",
+			},
+			reverseExists: false,
 		},
-		"remove existing edge": {
-			src: "a",
-			tgt: "b",
+		"remove nonsymmetric existing edge": {
+			testEdge: testEdge{
+				src: "a",
+				tgt: "b",
+			},
+			reverseExists: false,
+		},
+		"remove symmetric existing edge": {
+			testEdge: testEdge{
+				src: "a",
+				tgt: "d",
+			},
+			reverseExists: true,
 		},
 	}
 
@@ -166,111 +188,151 @@ func TestDirGraphRemoveEdge(t *testing.T) {
 			tg := setupTestDirGraph()
 			dg := tg.dg
 			dg.RemoveEdge(test.src, test.tgt)
-			assert.False(t, test.existsIn(*dg.dirAdj))
-			//assert.False(t, test.reverseExistsIn(*dg.invAdj))
-			// add before and after checks, remove an edge that is symmetric as another test case
+			assert.False(t, dg.dirAdj.HasEdge(test.src, test.tgt))
+			assert.False(t, dg.invAdj.HasEdge(test.tgt, test.src))
+			// test that only the directed edge was removed
+			if test.reverseExists {
+				assert.True(t, dg.dirAdj.HasEdge(test.tgt, test.src))
+			}
 		})
 	}
 }
 
-// func (suite *DirGraphTestSuite) TestDirGraphRemoveEdge() {
-// 	// test removing edge that does not exist
-// 	assert.False(suite.T(), suite.DG.HasEdge("b", "a"))
-// 	suite.DG.RemoveEdge("b", "a")
-// 	assert.False(suite.T(), suite.DG.HasEdge("b", "a"))
+func TestDirGraphRemoveNode(t *testing.T) {
+	tests := map[string]struct {
+		node string
+	}{
+		"remove nonexistent node": {
+			node: "x",
+		},
+		"remove existing node": {
+			node: "a",
+		},
+	}
 
-// 	// test removing edges
-// 	suite.DG.RemoveEdge("a", "b")
-// 	assert.False(suite.T(), suite.DG.HasEdge("a", "b"))
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			tg := setupTestDirGraph()
+			dg := tg.dg
+			dg.RemoveNode(test.node)
 
-// 	// test removing all edges for a node also removes the node
-// 	suite.DG.RemoveEdge("a", "c")
-// 	assert.Contains(suite.T(), suite.DG.GetNodes(), "a") // node a still has one edge left
-// 	suite.DG.RemoveEdge("c", "a")
-// 	assert.NotContains(suite.T(), suite.DG.GetNodes(), "a")
-// }
+			assert.NotContains(t, *dg.dirAdj, test.node)
+			for _, nbrs := range *dg.dirAdj {
+				_, ok := nbrs[test.node]
+				assert.False(t, ok)
+			}
+			assert.NotContains(t, *dg.invAdj, test.node)
+			for _, nbrs := range *dg.invAdj {
+				_, ok := nbrs[test.node]
+				assert.False(t, ok)
+			}
+		})
+	}
+}
 
-// func (suite *DirGraphTestSuite) TestDirGraphRemoveNode() {
-// 	suite.DG.RemoveNode("a")
-// 	nodes := suite.DG.GetNodes()
-// 	assert.NotContains(suite.T(), nodes, "a")
-// 	for _, node := range nodes {
-// 		assert.False(suite.T(), suite.DG.HasEdge(node, "a"))
-// 		assert.False(suite.T(), suite.DG.HasEdge("a", node))
-// 	}
-// }
+func TestDirGraphGetNodes(t *testing.T) {
+	emptyDirGraph, _ := NewDirGraph("")
+	tests := map[string]testDirGraph{
+		"empty graph": {
+			dg:    emptyDirGraph,
+			nodes: []string{},
+		},
+		"nonempty graph": *setupTestDirGraph(),
+	}
 
-// func (suite *DirGraphTestSuite) TestDirGraphGetNodes() {
-// 	nodes := suite.DG.GetNodes()
-// 	assert.Len(suite.T(), nodes, len(suite.Nodes))
-// 	for _, node := range suite.Nodes {
-// 		assert.Contains(suite.T(), nodes, node)
-// 	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nodes := test.dg.GetNodes()
+			assert.ElementsMatch(t, test.nodes, nodes)
+		})
+	}
+}
 
-// 	// test result on empty graph
-// 	dgEmpty, _ := NewDirGraph("testEmpty")
-// 	nodes = dgEmpty.GetNodes()
-// 	assert.Empty(suite.T(), nodes)
-// }
+func TestDirGraphGetInvNeighbors(t *testing.T) {
+	tests := map[string]struct {
+		node         string
+		expectedNbrs []string
+	}{
+		"nonexistent node": {
+			node:         "x",
+			expectedNbrs: []string{},
+		},
+		"existing node": {
+			node:         "d",
+			expectedNbrs: []string{"a", "c"},
+		},
+	}
 
-// func (suite *DirGraphTestSuite) TestDirGraphGetInvNeighbors() {
-// 	type testCase struct {
-// 		node    string
-// 		exists  bool
-// 		expNbrs []string
-// 	}
-// 	var table = map[string]testCase{
-// 		"get inv neighbors for node a": {
-// 			node:    "a",
-// 			exists:  true,
-// 			expNbrs: []string{"c"},
-// 		},
-// 		"get inv neighbors for node b": {
-// 			node:    "b",
-// 			exists:  true,
-// 			expNbrs: []string{"a"},
-// 		},
-// 		"get inv neighbors for node c": {
-// 			node:    "c",
-// 			exists:  true,
-// 			expNbrs: []string{"a", "b"},
-// 		},
-// 		"get inv neighbors for node d": {
-// 			node:    "d",
-// 			exists:  true,
-// 			expNbrs: []string{"c"},
-// 		},
-// 		"get inv neighbors for nonexistent node": {
-// 			node:   "z",
-// 			exists: false,
-// 		},
-// 	}
+	tg := setupTestDirGraph()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nbrs, ok := tg.dg.GetInvNeighbors(test.node)
+			if len(test.expectedNbrs) == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			for n := range nbrs {
+				assert.Contains(t, test.expectedNbrs, n)
+			}
+		})
+	}
+}
 
-// 	for _, tt := range table {
-// 		nbrs, ok := suite.DG.GetInvNeighbors(tt.node)
-// 		if !tt.exists {
-// 			assert.False(suite.T(), ok)
-// 			continue
-// 		}
-// 		assert.Len(suite.T(), nbrs, len(tt.expNbrs))
-// 		for _, n := range tt.expNbrs {
-// 			assert.Contains(suite.T(), nbrs, n)
-// 		}
-// 	}
-// }
+func TestDirGraphGetTotalDegree(t *testing.T) {
+	tests := map[string]struct {
+		node        string
+		expectedDeg float64
+	}{
+		"nonexistent node": {
+			node: "x",
+		},
+		"existing node": {
+			node:        "a",
+			expectedDeg: 29.5,
+		},
+	}
 
-// func (suite *DirGraphTestSuite) TestDirGraphGetTotalDegree() {
-// 	d, ok := suite.DG.GetTotalDegree("a")
-// 	assert.True(suite.T(), ok)
-// 	assert.Equal(suite.T(), 10.5, d)
-// 	_, ok = suite.DG.GetTotalDegree("foo")
-// 	assert.False(suite.T(), ok)
-// }
+	tg := setupTestDirGraph()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, ok := tg.dg.GetTotalDegree(test.node)
+			// node does not exist
+			if test.expectedDeg == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			assert.InEpsilon(t, test.expectedDeg, d, float64EqualTol)
+		})
+	}
+}
 
-// func (suite *DirGraphTestSuite) TestDirGraphGetInDegree() {
-// 	d, ok := suite.DG.GetInDegree("a")
-// 	assert.True(suite.T(), ok)
-// 	assert.Equal(suite.T(), 7.0, d)
-// 	_, ok = suite.DG.GetInDegree("foo")
-// 	assert.False(suite.T(), ok)
-// }
+func TestDirGraphGetInDegree(t *testing.T) {
+	tests := map[string]struct {
+		node        string
+		expectedDeg float64
+	}{
+		"nonexistent node": {
+			node: "x",
+		},
+		"existing node": {
+			node:        "a",
+			expectedDeg: 7.0,
+		},
+	}
+
+	tg := setupTestDirGraph()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			d, ok := tg.dg.GetInDegree(test.node)
+			// node does not exist
+			if test.expectedDeg == 0 {
+				assert.False(t, ok)
+				return
+			}
+			assert.True(t, ok)
+			assert.InEpsilon(t, test.expectedDeg, d, float64EqualTol)
+		})
+	}
+}
