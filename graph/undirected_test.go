@@ -24,32 +24,9 @@ func setupTestGraph() *testGraph {
 	}
 }
 
+// symmetricExistsIn evaluates if a testEdge exists both as src->tgt and tgt->src in a dirAdj
 func (te testEdge) symmetricExistsIn(a dirAdj) bool {
-	return te.existsIn(a) && te.reverseExistsIn(a)
-}
-
-func (te testEdge) existsIn(a dirAdj) bool {
-	n, ok := a[te.src]
-	if !ok {
-		return false
-	}
-	w, ok := n[te.tgt]
-	if !ok {
-		return false
-	}
-	return w == te.wgt
-}
-
-func (te testEdge) reverseExistsIn(a dirAdj) bool {
-	n, ok := a[te.tgt]
-	if !ok {
-		return false
-	}
-	w, ok := n[te.src]
-	if !ok {
-		return false
-	}
-	return w == te.wgt
+	return a.HasEdge(te.src, te.tgt) && a.HasEdge(te.tgt, te.src)
 }
 
 func TestNewGraph(t *testing.T) {
@@ -214,13 +191,13 @@ func TestGraphRemoveNode(t *testing.T) {
 			g.RemoveNode(test.node)
 
 			assert.NotContains(t, *g.dirAdj, test.node)
-			assert.NotContains(t, *g.invAdj, test.node)
-			for node, nbrs := range *g.dirAdj {
-				_, ok := nbrs[node]
+			for _, nbrs := range *g.dirAdj {
+				_, ok := nbrs[test.node]
 				assert.False(t, ok)
 			}
-			for node, nbrs := range *g.invAdj {
-				_, ok := nbrs[node]
+			assert.NotContains(t, *g.invAdj, test.node)
+			for _, nbrs := range *g.invAdj {
+				_, ok := nbrs[test.node]
 				assert.False(t, ok)
 			}
 		})
@@ -228,9 +205,11 @@ func TestGraphRemoveNode(t *testing.T) {
 }
 
 func TestGraphGetNodes(t *testing.T) {
+	emptyGraph, _ := NewGraph("")
 	tests := map[string]testGraph{
 		"empty graph": {
-			g: &Graph{dirAdj: &dirAdj{}},
+			g:     emptyGraph,
+			nodes: []string{},
 		},
 		"nonempty graph": *setupTestGraph(),
 	}
