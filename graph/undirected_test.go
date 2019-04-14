@@ -15,7 +15,7 @@ type testGraph struct {
 
 func setupTestGraph() *testGraph {
 	nodes := []string{"a", "b", "c", "d"}
-	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7")
+	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\nd d 3.1")
 	reader := ioutil.NopCloser(bytes.NewReader(edges))
 	g, _ := NewGraph("test", reader)
 	return &testGraph{
@@ -88,6 +88,11 @@ func TestGraphAddEdgeDefaultWeight(t *testing.T) {
 			tgt: "b",
 			wgt: defaultWgt,
 		},
+		"add self loop": {
+			src: "a",
+			tgt: "a",
+			wgt: defaultWgt,
+		},
 	}
 
 	for name, test := range tests {
@@ -128,6 +133,11 @@ func TestGraphAddEdgeNonDefaultWeight(t *testing.T) {
 			tgt: "b",
 			wgt: 1.11,
 		},
+		"add self loop": {
+			src: "a",
+			tgt: "a",
+			wgt: 16.16,
+		},
 	}
 
 	for name, test := range tests {
@@ -159,6 +169,10 @@ func TestGraphRemoveEdge(t *testing.T) {
 			src: "a",
 			tgt: "b",
 		},
+		"remove self loop": {
+			src: "d",
+			tgt: "d",
+		},
 	}
 
 	for name, test := range tests {
@@ -181,6 +195,9 @@ func TestGraphRemoveNode(t *testing.T) {
 		},
 		"remove existing node": {
 			node: "a",
+		},
+		"remove existing node with self loop": {
+			node: "d",
 		},
 	}
 

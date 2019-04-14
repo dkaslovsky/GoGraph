@@ -19,7 +19,7 @@ func setupAdj() dirAdj {
 	return dirAdj{
 		"x": {"y": 1, "z": 1},
 		"y": {"x": 3.2, "z": 9.7},
-		"z": {"x": 2.2},
+		"z": {"x": 2.2, "z": 3.4},
 	}
 }
 
@@ -39,6 +39,10 @@ func TestAddDirectedEdge(t *testing.T) {
 		"upsert edge": {
 			dirAdj{"a": {"b": 3.4}},
 			testEdge{src: "a", tgt: "b", wgt: 10.10},
+		},
+		"add self loop": {
+			dirAdj{},
+			testEdge{src: "a", tgt: "a", wgt: 1.1},
 		},
 	}
 
@@ -81,6 +85,11 @@ func TestRemoveDirectedEdge(t *testing.T) {
 		"remove all edges from node": {
 			src:  "y",
 			tgts: []string{"x", "z"},
+		},
+		"remove self loop": {
+			src:           "z",
+			tgts:          []string{"z"},
+			tgtsRemaining: []string{"x"},
 		},
 	}
 
@@ -147,6 +156,10 @@ func TestGetNeighbors(t *testing.T) {
 			node:         "x",
 			expectedNbrs: []string{"y", "z"},
 		},
+		"existing node with self loop": {
+			node:         "z",
+			expectedNbrs: []string{"x", "z"},
+		},
 	}
 
 	a := setupAdj()
@@ -173,13 +186,13 @@ func TestGetOutDegree(t *testing.T) {
 		"nonexistent node": {
 			node: "a",
 		},
-		"existing node multiple neighbors": {
+		"existing node": {
 			node:        "y",
 			expectedDeg: 12.9,
 		},
-		"existing node single neighbor": {
+		"existing node with self loop": {
 			node:        "z",
-			expectedDeg: 2.2,
+			expectedDeg: 5.6,
 		},
 	}
 
@@ -229,6 +242,11 @@ func TestHasEdge(t *testing.T) {
 			tgt:    "x",
 			exists: true,
 		},
+		"existing self loop edge": {
+			src:    "z",
+			tgt:    "z",
+			exists: true,
+		},
 	}
 
 	a := setupAdj()
@@ -271,6 +289,11 @@ func TestGetEdgeWeight(t *testing.T) {
 			src:    "y",
 			tgt:    "x",
 			weight: 3.2,
+		},
+		"existing self loop edge": {
+			src:    "z",
+			tgt:    "z",
+			weight: 3.4,
 		},
 	}
 

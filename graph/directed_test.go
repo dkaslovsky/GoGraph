@@ -17,7 +17,7 @@ type testDirGraph struct {
 func setupTestDirGraph() *testDirGraph {
 	nodes := []string{"a", "b", "c", "d"}
 	invNodes := []string{"a", "b", "c", "d"}
-	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\na d 19")
+	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\na d 19\nd d 3.1")
 	reader := ioutil.NopCloser(bytes.NewReader(edges))
 	dg, _ := NewDirGraph("test", reader)
 	return &testDirGraph{
@@ -88,6 +88,11 @@ func TestDirGraphAddEdgeDefaultWeight(t *testing.T) {
 			tgt: "b",
 			wgt: defaultWgt,
 		},
+		"add self loop": {
+			src: "a",
+			tgt: "a",
+			wgt: defaultWgt,
+		},
 	}
 
 	for name, test := range tests {
@@ -127,6 +132,11 @@ func TestDirGraphAddEdgeNonDefaultWeight(t *testing.T) {
 			src: "a",
 			tgt: "b",
 			wgt: 1.11,
+		},
+		"add self loop": {
+			src: "a",
+			tgt: "a",
+			wgt: 196.196,
 		},
 	}
 
@@ -181,6 +191,15 @@ func TestDirGraphRemoveEdge(t *testing.T) {
 			},
 			reverseExists: true,
 		},
+		"remove self loop": {
+			testEdge: testEdge{
+				src: "d",
+				tgt: "d",
+			},
+			// reverse is the same as forward so it
+			// does not exist after forward is removed
+			reverseExists: false,
+		},
 	}
 
 	for name, test := range tests {
@@ -207,6 +226,9 @@ func TestDirGraphRemoveNode(t *testing.T) {
 		},
 		"remove existing node": {
 			node: "a",
+		},
+		"remove existing node with self loop": {
+			node: "d",
 		},
 	}
 
@@ -258,8 +280,12 @@ func TestDirGraphGetInvNeighbors(t *testing.T) {
 			expectedNbrs: []string{},
 		},
 		"existing node": {
+			node:         "a",
+			expectedNbrs: []string{"b", "c", "d"},
+		},
+		"existing node with self loop": {
 			node:         "d",
-			expectedNbrs: []string{"a", "c"},
+			expectedNbrs: []string{"a", "c", "d"},
 		},
 	}
 
@@ -291,6 +317,10 @@ func TestDirGraphGetTotalDegree(t *testing.T) {
 			node:        "a",
 			expectedDeg: 29.5,
 		},
+		// "existing node with self loop": {
+		// 	node:        "d",
+		// 	expectedDeg: 30.2,
+		// },
 	}
 
 	tg := setupTestDirGraph()
@@ -319,6 +349,10 @@ func TestDirGraphGetInDegree(t *testing.T) {
 		"existing node": {
 			node:        "a",
 			expectedDeg: 7.0,
+		},
+		"existing node with self loop": {
+			node:        "d",
+			expectedDeg: 23.2,
 		},
 	}
 
