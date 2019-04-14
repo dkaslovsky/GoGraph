@@ -76,5 +76,11 @@ func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
 	if !ok {
 		return deg, false
 	}
-	return inDeg + outDeg, true
+	deg = inDeg + outDeg
+	// if a self loop exists its weight has been
+	// double counted so remove its weight once
+	if w, ok := dg.GetEdgeWeight(node, node); ok {
+		deg -= w
+	}
+	return deg, true
 }

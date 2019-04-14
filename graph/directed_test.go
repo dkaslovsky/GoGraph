@@ -317,10 +317,10 @@ func TestDirGraphGetTotalDegree(t *testing.T) {
 			node:        "a",
 			expectedDeg: 29.5,
 		},
-		// "existing node with self loop": {
-		// 	node:        "d",
-		// 	expectedDeg: 30.2,
-		// },
+		"existing node with self loop": {
+			node:        "d",
+			expectedDeg: 30.2,
+		},
 	}
 
 	tg := setupTestDirGraph()
