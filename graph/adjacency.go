@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Node is a node of a graph
 type Node string
 
 type dirAdj map[Node]map[Node]float64
