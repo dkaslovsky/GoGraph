@@ -10,8 +10,8 @@ import (
 const float64EqualTol = 1e-9
 
 type testEdge struct {
-	src string
-	tgt string
+	src Node
+	tgt Node
 	wgt float64
 }
 
@@ -64,32 +64,32 @@ func TestAddDirectedEdge(t *testing.T) {
 
 func TestRemoveDirectedEdge(t *testing.T) {
 	tests := map[string]struct {
-		src           string
-		tgts          []string
-		tgtsRemaining []string
+		src           Node
+		tgts          []Node
+		tgtsRemaining []Node
 	}{
 		"remove nonexistent edge from existing node": {
 			src:           "x",
-			tgts:          []string{"foo"},
-			tgtsRemaining: []string{"y", "z"},
+			tgts:          []Node{"foo"},
+			tgtsRemaining: []Node{"y", "z"},
 		},
 		"remove nonexistent edge from nonexistent node": {
 			src:  "foo",
-			tgts: []string{"bar"},
+			tgts: []Node{"bar"},
 		},
 		"remove existing edge": {
 			src:           "x",
-			tgts:          []string{"y"},
-			tgtsRemaining: []string{"z"},
+			tgts:          []Node{"y"},
+			tgtsRemaining: []Node{"z"},
 		},
 		"remove all edges from node": {
 			src:  "y",
-			tgts: []string{"x", "z"},
+			tgts: []Node{"x", "z"},
 		},
 		"remove self loop": {
 			src:           "z",
-			tgts:          []string{"z"},
-			tgtsRemaining: []string{"x"},
+			tgts:          []Node{"z"},
+			tgtsRemaining: []Node{"x"},
 		},
 	}
 
@@ -123,15 +123,15 @@ func TestRemoveDirectedEdge(t *testing.T) {
 func TestGetSrcNodes(t *testing.T) {
 	tests := map[string]struct {
 		a             dirAdj
-		expectedNodes []string
+		expectedNodes []Node
 	}{
 		"empty adjacency": {
 			a:             dirAdj{},
-			expectedNodes: []string{},
+			expectedNodes: []Node{},
 		},
 		"nonempty adjacency": {
 			a:             setupAdj(),
-			expectedNodes: []string{"x", "y", "z"},
+			expectedNodes: []Node{"x", "y", "z"},
 		},
 	}
 
@@ -145,20 +145,20 @@ func TestGetSrcNodes(t *testing.T) {
 
 func TestGetNeighbors(t *testing.T) {
 	tests := map[string]struct {
-		node         string
-		expectedNbrs []string
+		node         Node
+		expectedNbrs []Node
 	}{
 		"nonexistent node": {
 			node:         "a",
-			expectedNbrs: []string{},
+			expectedNbrs: []Node{},
 		},
 		"existing node": {
 			node:         "x",
-			expectedNbrs: []string{"y", "z"},
+			expectedNbrs: []Node{"y", "z"},
 		},
 		"existing node with self loop": {
 			node:         "z",
-			expectedNbrs: []string{"x", "z"},
+			expectedNbrs: []Node{"x", "z"},
 		},
 	}
 
@@ -180,7 +180,7 @@ func TestGetNeighbors(t *testing.T) {
 
 func TestGetOutDegree(t *testing.T) {
 	tests := map[string]struct {
-		node        string
+		node        Node
 		expectedDeg float64
 	}{
 		"nonexistent node": {
@@ -213,8 +213,8 @@ func TestGetOutDegree(t *testing.T) {
 
 func TestHasEdge(t *testing.T) {
 	tests := map[string]struct {
-		src    string
-		tgt    string
+		src    Node
+		tgt    Node
 		exists bool
 	}{
 		"nonexistent edge between nonexistent nodes": {
@@ -260,8 +260,8 @@ func TestHasEdge(t *testing.T) {
 
 func TestGetEdgeWeight(t *testing.T) {
 	tests := map[string]struct {
-		src    string
-		tgt    string
+		src    Node
+		tgt    Node
 		weight float64
 	}{
 		"nonexistent edge between nonexistent nodes": {

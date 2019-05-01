@@ -10,13 +10,13 @@ import (
 
 type testDirGraph struct {
 	dg       *DirGraph
-	nodes    []string
-	invNodes []string
+	nodes    []Node
+	invNodes []Node
 }
 
 func setupTestDirGraph() *testDirGraph {
-	nodes := []string{"a", "b", "c", "d"}
-	invNodes := []string{"a", "b", "c", "d"}
+	nodes := []Node{"a", "b", "c", "d"}
+	invNodes := []Node{"a", "b", "c", "d"}
 	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\na d 19\nd d 3.1")
 	reader := ioutil.NopCloser(bytes.NewReader(edges))
 	dg, _ := NewDirGraph("test", reader)
@@ -37,8 +37,8 @@ func TestNewDirGraph(t *testing.T) {
 	})
 	t.Run("graph from reader", func(t *testing.T) {
 		f := []byte("a b\na c 1.5\nc b 2.3")
-		nodes := []string{"a", "c"}
-		invNodes := []string{"b", "c"}
+		nodes := []Node{"a", "c"}
+		invNodes := []Node{"b", "c"}
 		edges := []testEdge{
 			testEdge{src: "a", tgt: "b", wgt: 1.0},
 			testEdge{src: "a", tgt: "c", wgt: 1.5},
@@ -219,7 +219,7 @@ func TestDirGraphRemoveEdge(t *testing.T) {
 
 func TestDirGraphRemoveNode(t *testing.T) {
 	tests := map[string]struct {
-		node string
+		node Node
 	}{
 		"remove nonexistent node": {
 			node: "x",
@@ -257,7 +257,7 @@ func TestDirGraphGetNodes(t *testing.T) {
 	tests := map[string]testDirGraph{
 		"empty graph": {
 			dg:    emptyDirGraph,
-			nodes: []string{},
+			nodes: []Node{},
 		},
 		"nonempty graph": *setupTestDirGraph(),
 	}
@@ -272,20 +272,20 @@ func TestDirGraphGetNodes(t *testing.T) {
 
 func TestDirGraphGetInvNeighbors(t *testing.T) {
 	tests := map[string]struct {
-		node         string
-		expectedNbrs []string
+		node         Node
+		expectedNbrs []Node
 	}{
 		"nonexistent node": {
 			node:         "x",
-			expectedNbrs: []string{},
+			expectedNbrs: []Node{},
 		},
 		"existing node": {
 			node:         "a",
-			expectedNbrs: []string{"b", "c", "d"},
+			expectedNbrs: []Node{"b", "c", "d"},
 		},
 		"existing node with self loop": {
 			node:         "d",
-			expectedNbrs: []string{"a", "c", "d"},
+			expectedNbrs: []Node{"a", "c", "d"},
 		},
 	}
 
@@ -307,7 +307,7 @@ func TestDirGraphGetInvNeighbors(t *testing.T) {
 
 func TestDirGraphGetTotalDegree(t *testing.T) {
 	tests := map[string]struct {
-		node        string
+		node        Node
 		expectedDeg float64
 	}{
 		"nonexistent node": {
@@ -340,7 +340,7 @@ func TestDirGraphGetTotalDegree(t *testing.T) {
 
 func TestDirGraphGetInDegree(t *testing.T) {
 	tests := map[string]struct {
-		node        string
+		node        Node
 		expectedDeg float64
 	}{
 		"nonexistent node": {

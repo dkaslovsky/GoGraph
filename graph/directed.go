@@ -29,7 +29,7 @@ func NewDirGraph(name string, readers ...io.ReadCloser) (*DirGraph, error) {
 
 // RemoveNode removes a node entirely from a DirGraph such that
 // no edges exist between it an any other node
-func (dg *DirGraph) RemoveNode(node string) {
+func (dg *DirGraph) RemoveNode(node Node) {
 	// remove node from dirAdj
 	if nbrs, ok := dg.GetNeighbors(node); ok {
 		for n := range nbrs {
@@ -45,12 +45,12 @@ func (dg *DirGraph) RemoveNode(node string) {
 }
 
 // GetNodes gets a slice of all nodes in a DirGraph
-func (dg *DirGraph) GetNodes() []string {
+func (dg *DirGraph) GetNodes() []Node {
 
 	nodes := dg.getSrcNodes() // guaranteed to be unique
 
 	// maintain map keyed by nodes to avoid adding duplicates from invAdj
-	set := map[string]struct{}{}
+	set := map[Node]struct{}{}
 	for _, node := range nodes {
 		set[node] = struct{}{}
 	}
@@ -67,7 +67,7 @@ func (dg *DirGraph) GetNodes() []string {
 }
 
 // GetTotalDegree calculates the sum of weights of all edges from and to a node
-func (dg *DirGraph) GetTotalDegree(node string) (deg float64, found bool) {
+func (dg *DirGraph) GetTotalDegree(node Node) (deg float64, found bool) {
 	outDeg, ok := dg.GetOutDegree(node)
 	if !ok {
 		return deg, false

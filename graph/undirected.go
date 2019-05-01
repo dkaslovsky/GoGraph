@@ -46,8 +46,8 @@ func (g *Graph) addFromReader(r io.ReadCloser) error {
 			continue
 		}
 
-		src := parts[0]
-		tgt := parts[1]
+		src := Node(parts[0])
+		tgt := Node(parts[1])
 		if src == "" || tgt == "" {
 			continue
 		}
@@ -71,7 +71,7 @@ func (g *Graph) addFromReader(r io.ReadCloser) error {
 }
 
 // AddEdge adds an edge between two nodes with an optional weight that defaults to 1.0
-func (g *Graph) AddEdge(src string, tgt string, weight ...float64) {
+func (g *Graph) AddEdge(src Node, tgt Node, weight ...float64) {
 	wgt := defaultWgt
 	if len(weight) > 0 {
 		wgt = weight[0]
@@ -81,14 +81,14 @@ func (g *Graph) AddEdge(src string, tgt string, weight ...float64) {
 }
 
 // RemoveEdge removes an edge between two nodes
-func (g *Graph) RemoveEdge(src string, tgt string) {
+func (g *Graph) RemoveEdge(src Node, tgt Node) {
 	g.removeDirectedEdge(src, tgt)
 	g.invAdj.removeDirectedEdge(tgt, src)
 }
 
 // RemoveNode removes a node entirely from a Graph such that
 // no edges exist between it an any other node
-func (g *Graph) RemoveNode(node string) {
+func (g *Graph) RemoveNode(node Node) {
 	if nbrs, ok := g.GetNeighbors(node); ok {
 		for n := range nbrs {
 			g.RemoveEdge(node, n)
@@ -102,26 +102,26 @@ func (g *Graph) PrintInv() {
 }
 
 // GetNodes gets a slice of all nodes in a Graph
-func (g *Graph) GetNodes() []string {
+func (g *Graph) GetNodes() []Node {
 	return g.getSrcNodes()
 }
 
 // GetInvNeighbors gets a slice of nodes that have an edge from them to a specified node
-func (g *Graph) GetInvNeighbors(node string) (map[string]float64, bool) {
+func (g *Graph) GetInvNeighbors(node Node) (map[Node]float64, bool) {
 	return g.invAdj.GetNeighbors(node)
 }
 
 // GetTotalDegree calculates the sum of weights of all edges with node as the source node
-func (g *Graph) GetTotalDegree(node string) (float64, bool) {
+func (g *Graph) GetTotalDegree(node Node) (float64, bool) {
 	return g.GetOutDegree(node)
 }
 
 // GetDegree calculates the sum of weights of all edges with node as the source node
-func (g *Graph) GetDegree(node string) (float64, bool) {
+func (g *Graph) GetDegree(node Node) (float64, bool) {
 	return g.GetOutDegree(node)
 }
 
 // GetInDegree calculates the sum of weights of all edges with node as the target node
-func (g *Graph) GetInDegree(node string) (float64, bool) {
+func (g *Graph) GetInDegree(node Node) (float64, bool) {
 	return g.invAdj.GetOutDegree(node)
 }
