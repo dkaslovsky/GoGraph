@@ -6,15 +6,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	n "github.com/dkaslovsky/GoGraph/node"
 )
 
 type testGraph struct {
 	g     *Graph
-	nodes []Node
+	nodes []n.Node
 }
 
 func setupTestGraph() *testGraph {
-	nodes := []Node{"a", "b", "c", "d"}
+	nodes := []n.Node{"a", "b", "c", "d"}
 	edges := []byte("a b 1.5\na c 2\nb c 3.3\nc d 1.1\nd a 7\nd d 3.1")
 	reader := ioutil.NopCloser(bytes.NewReader(edges))
 	g, _ := NewGraph("test", reader)
@@ -38,7 +40,7 @@ func TestNewGraph(t *testing.T) {
 	})
 	t.Run("graph from reader", func(t *testing.T) {
 		f := []byte("a b\na c 1.5\nc b 2.3")
-		nodes := []Node{"a", "b", "c"}
+		nodes := []n.Node{"a", "b", "c"}
 		edges := []testEdge{
 			testEdge{src: "a", tgt: "b", wgt: 1.0},
 			testEdge{src: "a", tgt: "c", wgt: 1.5},
@@ -188,7 +190,7 @@ func TestGraphRemoveEdge(t *testing.T) {
 
 func TestGraphRemoveNode(t *testing.T) {
 	tests := map[string]struct {
-		node Node
+		node n.Node
 	}{
 		"remove nonexistent node": {
 			node: "x",
@@ -226,7 +228,7 @@ func TestGraphGetNodes(t *testing.T) {
 	tests := map[string]testGraph{
 		"empty graph": {
 			g:     emptyGraph,
-			nodes: []Node{},
+			nodes: []n.Node{},
 		},
 		"nonempty graph": *setupTestGraph(),
 	}

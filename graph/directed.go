@@ -2,6 +2,8 @@ package graph
 
 import (
 	"io"
+
+	n "github.com/dkaslovsky/GoGraph/node"
 )
 
 // DirGraph is an adjacency map representation of a directed graph
@@ -29,7 +31,7 @@ func NewDirGraph(name string, readers ...io.ReadCloser) (*DirGraph, error) {
 
 // RemoveNode removes a node entirely from a DirGraph such that
 // no edges exist between it an any other node
-func (dg *DirGraph) RemoveNode(node Node) {
+func (dg *DirGraph) RemoveNode(node n.Node) {
 	// remove node from dirAdj
 	if nbrs, ok := dg.GetNeighbors(node); ok {
 		for n := range nbrs {
@@ -45,20 +47,20 @@ func (dg *DirGraph) RemoveNode(node Node) {
 }
 
 // GetNodes gets a slice of all nodes in a DirGraph
-func (dg *DirGraph) GetNodes() []Node {
+func (dg *DirGraph) GetNodes() []n.Node {
 
 	nodes := dg.getSrcNodes() // guaranteed to be unique
 
 	// maintain map keyed by nodes to avoid adding duplicates from invAdj
-	set := map[Node]struct{}{}
+	nodeSet := n.NewNodeSet()
 	for _, node := range nodes {
-		set[node] = struct{}{}
+		nodeSet.Add(node)
 	}
 
 	// append invAdj node only if it is not in the set
 	invNodes := dg.invAdj.getSrcNodes() // guaranteed to be unique
 	for _, node := range invNodes {
-		if _, ok := set[node]; !ok {
+		if !nodeSet.Contains(node) {
 			nodes = append(nodes, node)
 		}
 	}
@@ -67,7 +69,7 @@ func (dg *DirGraph) GetNodes() []Node {
 }
 
 // GetTotalDegree calculates the sum of weights of all edges from and to a node
-func (dg *DirGraph) GetTotalDegree(node Node) (deg float64, found bool) {
+func (dg *DirGraph) GetTotalDegree(node n.Node) (deg float64, found bool) {
 	outDeg, ok := dg.GetOutDegree(node)
 	if !ok {
 		return deg, false

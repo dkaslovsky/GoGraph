@@ -2,12 +2,11 @@ package graph
 
 import (
 	"fmt"
+
+	n "github.com/dkaslovsky/GoGraph/node"
 )
 
-// Node is a node of a graph
-type Node string
-
-type dirAdj map[Node]map[Node]float64
+type dirAdj map[n.Node]map[n.Node]float64
 
 // Print prints the adjacency structure
 func (a dirAdj) Print() {
@@ -19,15 +18,15 @@ func (a dirAdj) Print() {
 	}
 }
 
-func (a dirAdj) addDirectedEdge(src Node, tgt Node, wgt float64) {
+func (a dirAdj) addDirectedEdge(src n.Node, tgt n.Node, wgt float64) {
 	if nbrs, ok := a[src]; ok {
 		nbrs[tgt] = wgt
 		return
 	}
-	a[src] = map[Node]float64{tgt: wgt}
+	a[src] = map[n.Node]float64{tgt: wgt}
 }
 
-func (a dirAdj) removeDirectedEdge(src Node, tgt Node) {
+func (a dirAdj) removeDirectedEdge(src n.Node, tgt n.Node) {
 	nbrs, ok := a[src]
 	if !ok {
 		return
@@ -39,7 +38,7 @@ func (a dirAdj) removeDirectedEdge(src Node, tgt Node) {
 	}
 }
 
-func (a dirAdj) getSrcNodes() (nodes []Node) {
+func (a dirAdj) getSrcNodes() (nodes []n.Node) {
 	for node := range a {
 		nodes = append(nodes, node)
 	}
@@ -47,13 +46,13 @@ func (a dirAdj) getSrcNodes() (nodes []Node) {
 }
 
 // GetNeighbors gets the nodes that a specified node connects to with an edge
-func (a dirAdj) GetNeighbors(node Node) (map[Node]float64, bool) {
+func (a dirAdj) GetNeighbors(node n.Node) (map[n.Node]float64, bool) {
 	nbrs, ok := a[node]
 	return nbrs, ok
 }
 
 // GetOutDegree calculates the sum of weights of all edges with node as the source node
-func (a dirAdj) GetOutDegree(node Node) (deg float64, found bool) {
+func (a dirAdj) GetOutDegree(node n.Node) (deg float64, found bool) {
 	nbrs, ok := a.GetNeighbors(node)
 	if !ok {
 		return deg, false
@@ -65,7 +64,7 @@ func (a dirAdj) GetOutDegree(node Node) (deg float64, found bool) {
 }
 
 // HasEdge returns true if an edge exists from a node to another node, false otherwise
-func (a dirAdj) HasEdge(src Node, tgt Node) bool {
+func (a dirAdj) HasEdge(src n.Node, tgt n.Node) bool {
 	nbrs, ok := a.GetNeighbors(src)
 	if !ok {
 		return false
@@ -75,7 +74,7 @@ func (a dirAdj) HasEdge(src Node, tgt Node) bool {
 }
 
 // GetEdgeWeight returns the weight of the edge from a node to another node if it exists
-func (a dirAdj) GetEdgeWeight(src Node, tgt Node) (weight float64, found bool) {
+func (a dirAdj) GetEdgeWeight(src n.Node, tgt n.Node) (weight float64, found bool) {
 	if !a.HasEdge(src, tgt) {
 		return weight, false
 	}
