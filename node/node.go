@@ -1,15 +1,16 @@
-package datastructures
+package node
 
 import (
 	"errors"
 	"sync"
-
-	g "github.com/dkaslovsky/GoGraph/graph"
 )
+
+// Node is a node of a graph
+type Node string
 
 // NodeStack is a stack (LIFO) of nodes
 type NodeStack struct {
-	nodes []g.Node
+	nodes []Node
 	lock  sync.Mutex
 }
 
@@ -19,7 +20,7 @@ func NewNodeStack() *NodeStack {
 }
 
 // Push adds a node to the stack
-func (s *NodeStack) Push(n g.Node) {
+func (s *NodeStack) Push(n Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -27,7 +28,7 @@ func (s *NodeStack) Push(n g.Node) {
 }
 
 // Pop removes and returns the most recently added node from the stack
-func (s *NodeStack) Pop() (n g.Node, err error) {
+func (s *NodeStack) Pop() (n Node, err error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -49,19 +50,19 @@ func (s *NodeStack) Len() int {
 
 // NodeSet is a set of nodes
 type NodeSet struct {
-	set  map[g.Node]struct{}
+	set  map[Node]struct{}
 	lock sync.Mutex
 }
 
 // NewNodeSet returns a pointer to an empty NodeSet
 func NewNodeSet() *NodeSet {
 	return &NodeSet{
-		set: map[g.Node]struct{}{},
+		set: map[Node]struct{}{},
 	}
 }
 
 // Add adds a node to the set
-func (s *NodeSet) Add(elem g.Node) {
+func (s *NodeSet) Add(elem Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -69,7 +70,7 @@ func (s *NodeSet) Add(elem g.Node) {
 }
 
 // Contains returns a bool indicating if the set contains a specified node
-func (s *NodeSet) Contains(elem g.Node) bool {
+func (s *NodeSet) Contains(elem Node) bool {
 	_, ok := s.set[elem]
 	return ok
 }
@@ -80,8 +81,8 @@ func (s *NodeSet) Len() int {
 }
 
 // ToSlice returns a slice of all nodes in the set
-func (s *NodeSet) ToSlice() []g.Node {
-	sl := make([]g.Node, s.Len())
+func (s *NodeSet) ToSlice() []Node {
+	sl := make([]Node, s.Len())
 	i := 0
 	for elem := range s.set {
 		sl[i] = elem

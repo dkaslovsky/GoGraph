@@ -1,16 +1,14 @@
-package datastructures
+package node
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	g "github.com/dkaslovsky/GoGraph/graph"
 )
 
 func setupNodeStack() *NodeStack {
 	return &NodeStack{
-		nodes: []g.Node{"x", "y", "z"},
+		nodes: []Node{"x", "y", "z"},
 	}
 }
 
@@ -24,7 +22,7 @@ func TestNewNodeStack(t *testing.T) {
 func TestNodeStackPush(t *testing.T) {
 	tests := map[string]struct {
 		stack  *NodeStack
-		toPush g.Node
+		toPush Node
 	}{
 		"push to empty stack": {
 			stack:  NewNodeStack(),
@@ -74,7 +72,7 @@ func TestNodeStackPop(t *testing.T) {
 				return
 			}
 			assert.Nil(t, err)
-			assert.Equal(t, n, g.Node("z"))
+			assert.Equal(t, n, Node("z"))
 			assert.Equal(t, len(test.stack.nodes), curStackLen-1)
 		})
 	}
@@ -104,7 +102,7 @@ func TestNodeStackLen(t *testing.T) {
 
 func setupNodeSet() *NodeSet {
 	return &NodeSet{
-		set: map[g.Node]struct{}{
+		set: map[Node]struct{}{
 			"x": struct{}{},
 			"y": struct{}{},
 		},
@@ -121,7 +119,7 @@ func TestNewNodeSet(t *testing.T) {
 func TestNodeSetAdd(t *testing.T) {
 	tests := map[string]struct {
 		set   *NodeSet
-		toAdd g.Node
+		toAdd Node
 	}{
 		"add to empty set": {
 			set:   NewNodeSet(),
@@ -147,7 +145,7 @@ func TestNodeSetAdd(t *testing.T) {
 
 func TestNodeSetContains(t *testing.T) {
 	tests := map[string]struct {
-		element       g.Node
+		element       Node
 		shouldContain bool
 	}{
 		"set contains element": {
@@ -194,15 +192,15 @@ func TestNodeSetLen(t *testing.T) {
 func TestNodeSetToSlice(t *testing.T) {
 	tests := map[string]struct {
 		set   *NodeSet
-		slice []g.Node
+		slice []Node
 	}{
 		"empty set": {
 			set:   NewNodeSet(),
-			slice: []g.Node{},
+			slice: []Node{},
 		},
 		"nonempty set": {
 			set:   setupNodeSet(),
-			slice: []g.Node{"x", "y"},
+			slice: []Node{"x", "y"},
 		},
 	}
 
