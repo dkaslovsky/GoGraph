@@ -45,6 +45,11 @@ func (a dirAdj) getSrcNodes() (nodes []n.Node) {
 	return nodes
 }
 
+func (a dirAdj) hasSrcNode(node n.Node) bool {
+	_, ok := a[node]
+	return ok
+}
+
 // GetNeighbors gets the nodes that a specified node connects to with an edge
 func (a dirAdj) GetNeighbors(node n.Node) (map[n.Node]float64, bool) {
 	nbrs, ok := a[node]

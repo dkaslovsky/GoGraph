@@ -145,6 +145,30 @@ func TestGetSrcNodes(t *testing.T) {
 	}
 }
 
+func TestHasSrcNode(t *testing.T) {
+	tests := map[string]struct {
+		node        n.Node
+		shouldExist bool
+	}{
+		"nonexistent node": {
+			node:        "a",
+			shouldExist: false,
+		},
+		"existing node": {
+			node:        "x",
+			shouldExist: true,
+		},
+	}
+
+	a := setupAdj()
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nodeExists := a.hasSrcNode(test.node)
+			assert.Equal(t, test.shouldExist, nodeExists)
+		})
+	}
+}
+
 func TestGetNeighbors(t *testing.T) {
 	tests := map[string]struct {
 		node         n.Node
