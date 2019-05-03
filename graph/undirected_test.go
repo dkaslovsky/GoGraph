@@ -264,3 +264,32 @@ func TestGraphGetInDegree(t *testing.T) {
 		}
 	})
 }
+
+func TestGraphHasNode(t *testing.T) {
+	tests := map[string]struct {
+		node        n.Node
+		shouldExist bool
+	}{
+		"nonexistent node": {
+			node:        "x",
+			shouldExist: false,
+		},
+		"existing src node": {
+			node:        "a",
+			shouldExist: true,
+		},
+		"existing tgt node": {
+			node:        "b",
+			shouldExist: true,
+		},
+	}
+
+	g, _ := NewGraph("test")
+	g.AddEdge("a", "b")
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nodeExists := g.HasNode(test.node)
+			assert.Equal(t, test.shouldExist, nodeExists)
+		})
+	}
+}

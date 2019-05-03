@@ -98,7 +98,7 @@ func (g *Graph) RemoveNode(node n.Node) {
 	}
 }
 
-// PrintInv displays a DirGraph's incoming adjacency structure
+// PrintInv displays a Graph's incoming adjacency structure
 func (g *Graph) PrintInv() {
 	g.invAdj.Print()
 }
@@ -126,4 +126,9 @@ func (g *Graph) GetDegree(node n.Node) (float64, bool) {
 // GetInDegree calculates the sum of weights of all edges with node as the target node
 func (g *Graph) GetInDegree(node n.Node) (float64, bool) {
 	return g.invAdj.GetOutDegree(node)
+}
+
+// HasNode returns true if the graph contains the specified node
+func (g *Graph) HasNode(node n.Node) bool {
+	return g.dirAdj.hasSrcNode(node)
 }

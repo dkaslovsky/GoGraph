@@ -86,3 +86,8 @@ func (dg *DirGraph) GetTotalDegree(node n.Node) (deg float64, found bool) {
 	}
 	return deg, true
 }
+
+// HasNode returns true if the directed graph contains the specified node
+func (dg *DirGraph) HasNode(node n.Node) bool {
+	return dg.dirAdj.hasSrcNode(node) || dg.invAdj.hasSrcNode(node)
+}

@@ -372,3 +372,32 @@ func TestDirGraphGetInDegree(t *testing.T) {
 		})
 	}
 }
+
+func TestDirGraphHasNode(t *testing.T) {
+	tests := map[string]struct {
+		node        n.Node
+		shouldExist bool
+	}{
+		"nonexistent node": {
+			node:        "x",
+			shouldExist: false,
+		},
+		"existing src node": {
+			node:        "a",
+			shouldExist: true,
+		},
+		"existing tgt node": {
+			node:        "b",
+			shouldExist: true,
+		},
+	}
+
+	dg, _ := NewDirGraph("test")
+	dg.AddEdge("a", "b")
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			nodeExists := dg.HasNode(test.node)
+			assert.Equal(t, test.shouldExist, nodeExists)
+		})
+	}
+}
