@@ -52,7 +52,7 @@ func (dg *DirGraph) GetNodes() []n.Node {
 	nodes := dg.getSrcNodes() // guaranteed to be unique
 
 	// maintain map keyed by nodes to avoid adding duplicates from invAdj
-	nodeSet := n.NewNodeSet()
+	nodeSet := n.NewSet()
 	for _, node := range nodes {
 		nodeSet.Add(node)
 	}

@@ -5,22 +5,22 @@ import (
 	"sync"
 )
 
-// Node is a node of a graph
+// Node is a vertex of a graph
 type Node string
 
-// NodeStack is a stack (LIFO) of nodes
-type NodeStack struct {
+// Stack is a LIFO of nodes
+type Stack struct {
 	nodes []Node
 	lock  sync.Mutex
 }
 
-// NewNodeStack returns a pointer to an empty NodeStack
-func NewNodeStack() *NodeStack {
-	return &NodeStack{}
+// NewStack returns a pointer to an empty Stack
+func NewStack() *Stack {
+	return &Stack{}
 }
 
 // Push adds a node to the stack
-func (s *NodeStack) Push(n Node) {
+func (s *Stack) Push(n Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -28,7 +28,7 @@ func (s *NodeStack) Push(n Node) {
 }
 
 // Pop removes and returns the most recently added node from the stack
-func (s *NodeStack) Pop() (n Node, err error) {
+func (s *Stack) Pop() (n Node, err error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -44,47 +44,47 @@ func (s *NodeStack) Pop() (n Node, err error) {
 }
 
 // Len returns the number of nodes in the stack
-func (s *NodeStack) Len() int {
+func (s *Stack) Len() int {
 	return len(s.nodes)
 }
 
-// NodeSet is a set of nodes
-type NodeSet struct {
-	set  map[Node]struct{}
-	lock sync.Mutex
+// Set is an unordered unique collection of nodes
+type Set struct {
+	items map[Node]struct{}
+	lock  sync.Mutex
 }
 
-// NewNodeSet returns a pointer to an empty NodeSet
-func NewNodeSet() *NodeSet {
-	return &NodeSet{
-		set: map[Node]struct{}{},
+// NewSet returns a pointer to an empty Set
+func NewSet() *Set {
+	return &Set{
+		items: map[Node]struct{}{},
 	}
 }
 
 // Add adds a node to the set
-func (s *NodeSet) Add(elem Node) {
+func (s *Set) Add(elem Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.set[elem] = struct{}{}
+	s.items[elem] = struct{}{}
 }
 
 // Contains returns a bool indicating if the set contains a specified node
-func (s *NodeSet) Contains(elem Node) bool {
-	_, ok := s.set[elem]
+func (s *Set) Contains(elem Node) bool {
+	_, ok := s.items[elem]
 	return ok
 }
 
 // Len returns the number of nodes in the set
-func (s *NodeSet) Len() int {
-	return len(s.set)
+func (s *Set) Len() int {
+	return len(s.items)
 }
 
 // ToSlice returns a slice of all nodes in the set
-func (s *NodeSet) ToSlice() []Node {
+func (s *Set) ToSlice() []Node {
 	sl := make([]Node, s.Len())
 	i := 0
-	for elem := range s.set {
+	for elem := range s.items {
 		sl[i] = elem
 		i++
 	}

@@ -16,10 +16,10 @@ func DFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
 		return []n.Node{}
 	}
 
-	s := n.NewNodeStack()
+	s := n.NewStack()
 	s.Push(node)
 
-	visited := n.NewNodeSet()
+	visited := n.NewSet()
 
 	for s.Len() > 0 {
 		curNode, _ := s.Pop() // no need to check error since the stack cannot be empty here

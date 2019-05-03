@@ -6,34 +6,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupNodeStack() *NodeStack {
-	return &NodeStack{
+func setupStack() *Stack {
+	return &Stack{
 		nodes: []Node{"x", "y", "z"},
 	}
 }
 
-func TestNewNodeStack(t *testing.T) {
-	t.Run("new NodeStack is empty", func(t *testing.T) {
-		n := NewNodeStack()
+func TestNewStack(t *testing.T) {
+	t.Run("new Stack is empty", func(t *testing.T) {
+		n := NewStack()
 		assert.Empty(t, n.nodes)
 	})
 }
 
-func TestNodeStackPush(t *testing.T) {
+func TestStackPush(t *testing.T) {
 	tests := map[string]struct {
-		stack  *NodeStack
+		stack  *Stack
 		toPush Node
 	}{
 		"push to empty stack": {
-			stack:  NewNodeStack(),
+			stack:  NewStack(),
 			toPush: "a",
 		},
 		"push to nonempty stack": {
-			stack:  setupNodeStack(),
+			stack:  setupStack(),
 			toPush: "a",
 		},
 		"push to stack already containing same element": {
-			stack:  setupNodeStack(),
+			stack:  setupStack(),
 			toPush: "x",
 		},
 	}
@@ -48,17 +48,17 @@ func TestNodeStackPush(t *testing.T) {
 	}
 }
 
-func TestNodeStackPop(t *testing.T) {
+func TestStackPop(t *testing.T) {
 	tests := map[string]struct {
-		stack     *NodeStack
+		stack     *Stack
 		shouldErr bool
 	}{
 		"pop from empty stack should error": {
-			stack:     NewNodeStack(),
+			stack:     NewStack(),
 			shouldErr: true,
 		},
 		"pop from nonempty stack": {
-			stack:     setupNodeStack(),
+			stack:     setupStack(),
 			shouldErr: false,
 		},
 	}
@@ -78,17 +78,17 @@ func TestNodeStackPop(t *testing.T) {
 	}
 }
 
-func TestNodeStackLen(t *testing.T) {
+func TestStackLen(t *testing.T) {
 	tests := map[string]struct {
-		stack    *NodeStack
+		stack    *Stack
 		stackLen int
 	}{
 		"empty stack": {
-			stack:    NewNodeStack(),
+			stack:    NewStack(),
 			stackLen: 0,
 		},
 		"nonempty stack": {
-			stack:    setupNodeStack(),
+			stack:    setupStack(),
 			stackLen: 3,
 		},
 	}
@@ -100,37 +100,37 @@ func TestNodeStackLen(t *testing.T) {
 	}
 }
 
-func setupNodeSet() *NodeSet {
-	return &NodeSet{
-		set: map[Node]struct{}{
+func setupSet() *Set {
+	return &Set{
+		items: map[Node]struct{}{
 			"x": struct{}{},
 			"y": struct{}{},
 		},
 	}
 }
 
-func TestNewNodeSet(t *testing.T) {
-	t.Run("new NodeSet is empty", func(t *testing.T) {
-		n := NewNodeSet()
-		assert.Empty(t, n.set)
+func TestNewSet(t *testing.T) {
+	t.Run("new Set is empty", func(t *testing.T) {
+		n := NewSet()
+		assert.Empty(t, n.items)
 	})
 }
 
-func TestNodeSetAdd(t *testing.T) {
+func TestSetAdd(t *testing.T) {
 	tests := map[string]struct {
-		set   *NodeSet
+		set   *Set
 		toAdd Node
 	}{
 		"add to empty set": {
-			set:   NewNodeSet(),
+			set:   NewSet(),
 			toAdd: "a",
 		},
 		"add to nonempty set": {
-			set:   setupNodeSet(),
+			set:   setupSet(),
 			toAdd: "a",
 		},
 		"upsert": {
-			set:   setupNodeSet(),
+			set:   setupSet(),
 			toAdd: "x",
 		},
 	}
@@ -138,12 +138,12 @@ func TestNodeSetAdd(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			test.set.Add(test.toAdd)
-			assert.Contains(t, test.set.set, test.toAdd)
+			assert.Contains(t, test.set.items, test.toAdd)
 		})
 	}
 }
 
-func TestNodeSetContains(t *testing.T) {
+func TestSetContains(t *testing.T) {
 	tests := map[string]struct {
 		element       Node
 		shouldContain bool
@@ -158,7 +158,7 @@ func TestNodeSetContains(t *testing.T) {
 		},
 	}
 
-	set := setupNodeSet()
+	set := setupSet()
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			isIn := set.Contains(test.element)
@@ -167,17 +167,17 @@ func TestNodeSetContains(t *testing.T) {
 	}
 }
 
-func TestNodeSetLen(t *testing.T) {
+func TestSetLen(t *testing.T) {
 	tests := map[string]struct {
-		set    *NodeSet
+		set    *Set
 		setLen int
 	}{
 		"empty set": {
-			set:    NewNodeSet(),
+			set:    NewSet(),
 			setLen: 0,
 		},
 		"nonempty set": {
-			set:    setupNodeSet(),
+			set:    setupSet(),
 			setLen: 2,
 		},
 	}
@@ -189,17 +189,17 @@ func TestNodeSetLen(t *testing.T) {
 	}
 }
 
-func TestNodeSetToSlice(t *testing.T) {
+func TestSetToSlice(t *testing.T) {
 	tests := map[string]struct {
-		set   *NodeSet
+		set   *Set
 		slice []Node
 	}{
 		"empty set": {
-			set:   NewNodeSet(),
+			set:   NewSet(),
 			slice: []Node{},
 		},
 		"nonempty set": {
-			set:   setupNodeSet(),
+			set:   setupSet(),
 			slice: []Node{"x", "y"},
 		},
 	}
