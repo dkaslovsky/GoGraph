@@ -86,7 +86,7 @@ func TestStackPop(t *testing.T) {
 }
 
 func TestStackPopPush(t *testing.T) {
-	t.Run("popping until empty and then pushing", func(t *testing.T) {
+	t.Run("stack popping until empty and then pushing", func(t *testing.T) {
 		s := setupStack()
 		// pop until empty
 		for s.Len() > 0 {
@@ -128,7 +128,135 @@ func TestStackLen(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.stack.Len(), test.stackLen)
+			assert.Equal(t, test.stackLen, test.stack.Len())
+		})
+	}
+}
+
+func setupQueue() *Queue {
+	itemZ := &queueItem{data: "z"}
+	itemY := &queueItem{data: "y", next: itemZ}
+	itemX := &queueItem{data: "x", next: itemY}
+	return &Queue{
+		lock:  &sync.Mutex{},
+		first: itemX,
+		last:  itemZ,
+		len:   3,
+	}
+}
+
+func TestNewQueue(t *testing.T) {
+	t.Run("new Stack is empty", func(t *testing.T) {
+		q := NewQueue()
+		assert.Nil(t, q.first)
+		assert.Nil(t, q.last)
+		assert.Zero(t, q.len)
+	})
+}
+
+func TestQueuePush(t *testing.T) {
+	tests := map[string]struct {
+		queue  *Queue
+		toPush Node
+	}{
+		"push to empty queue": {
+			queue:  NewQueue(),
+			toPush: "a",
+		},
+		"push to nonempty queue": {
+			queue:  setupQueue(),
+			toPush: "a",
+		},
+		"push to queue already containing same element": {
+			queue:  setupQueue(),
+			toPush: "x",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			curQueueLen := test.queue.len
+			test.queue.Push(test.toPush)
+			assert.Equal(t, test.queue.last.data, test.toPush)
+			assert.Equal(t, test.queue.len, curQueueLen+1)
+		})
+	}
+}
+
+func TestQueuePop(t *testing.T) {
+	tests := map[string]struct {
+		queue     *Queue
+		shouldErr bool
+	}{
+		"pop from empty queue should error": {
+			queue:     NewQueue(),
+			shouldErr: true,
+		},
+		"pop from nonempty queue": {
+			queue:     setupQueue(),
+			shouldErr: false,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			curQueueLen := test.queue.len
+			n, err := test.queue.Pop()
+			if test.shouldErr {
+				assert.NotNil(t, err)
+				return
+			}
+			assert.Nil(t, err)
+			assert.Equal(t, n, Node("x"))
+			assert.Equal(t, test.queue.len, curQueueLen-1)
+		})
+	}
+}
+
+func TestQueuePopPush(t *testing.T) {
+	t.Run("queue popping until empty and then pushing", func(t *testing.T) {
+		q := setupQueue()
+		// pop until empty
+		for q.Len() > 0 {
+			q.Pop()
+		}
+		assert.Zero(t, q.len)
+		assert.Nil(t, q.first)
+		assert.Nil(t, q.last)
+		// push on to newly empty stack
+		toPush := []Node{"a", "b"}
+		for _, n := range toPush {
+			q.Push(n)
+		}
+		assert.Equal(t, len(toPush), q.len)
+		assert.NotNil(t, q.first)
+		assert.NotNil(t, q.last)
+		for _, pushed := range toPush {
+			n, err := q.Pop()
+			assert.Equal(t, pushed, n)
+			assert.Nil(t, err)
+		}
+	})
+}
+
+func TestQueueLen(t *testing.T) {
+	tests := map[string]struct {
+		queue    *Queue
+		queueLen int
+	}{
+		"empty queue": {
+			queue:    NewQueue(),
+			queueLen: 0,
+		},
+		"nonempty queue": {
+			queue:    setupQueue(),
+			queueLen: 3,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.queueLen, test.queue.Len())
 		})
 	}
 }
