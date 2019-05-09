@@ -16,7 +16,7 @@ type stackItem struct {
 // Stack is a LIFO of nodes
 type Stack struct {
 	lock *sync.Mutex
-	top  *stackItem
+	last *stackItem
 	len  int
 }
 
@@ -32,12 +32,12 @@ func (s *Stack) Push(node Node) {
 
 	s.len++
 	toPush := &stackItem{data: node}
-	if s.top == nil {
-		s.top = toPush
+	if s.last == nil {
+		s.last = toPush
 		return
 	}
-	toPush.next = s.top
-	s.top = toPush
+	toPush.next = s.last
+	s.last = toPush
 }
 
 // Pop removes and returns the most recently added node from the stack
@@ -45,14 +45,14 @@ func (s *Stack) Pop() (Node, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	if s.top == nil {
+	if s.last == nil {
 		return "", errors.New("cannot pop from empty stack")
 	}
 
 	s.len--
-	curTop := s.top
+	curTop := s.last
 	val := curTop.data
-	s.top = curTop.next
+	s.last = curTop.next
 	// prevent memory grow (likely not needed due to GC)
 	curTop = nil
 

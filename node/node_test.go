@@ -13,7 +13,7 @@ func setupStack() *Stack {
 	itemZ := &stackItem{data: "z", next: itemY}
 	return &Stack{
 		lock: &sync.Mutex{},
-		top:  itemZ,
+		last: itemZ,
 		len:  3,
 	}
 }
@@ -21,7 +21,7 @@ func setupStack() *Stack {
 func TestNewStack(t *testing.T) {
 	t.Run("new Stack is empty", func(t *testing.T) {
 		n := NewStack()
-		assert.Nil(t, n.top)
+		assert.Nil(t, n.last)
 		assert.Zero(t, n.len)
 	})
 }
@@ -49,7 +49,7 @@ func TestStackPush(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			curStackLen := test.stack.len
 			test.stack.Push(test.toPush)
-			assert.Equal(t, test.stack.top.data, test.toPush)
+			assert.Equal(t, test.stack.last.data, test.toPush)
 			assert.Equal(t, test.stack.len, curStackLen+1)
 		})
 	}
