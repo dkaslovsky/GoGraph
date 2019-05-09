@@ -49,12 +49,11 @@ func (s *Stack) Pop() (Node, error) {
 		return "", errors.New("cannot pop from empty stack")
 	}
 
+	curLast := s.last
+	val := curLast.data
+	s.last = curLast.next
+	curLast = nil // prevent memory grow (likely not needed due to GC)
 	s.len--
-	curTop := s.last
-	val := curTop.data
-	s.last = curTop.next
-	// prevent memory grow (likely not needed due to GC)
-	curTop = nil
 
 	return val, nil
 }
@@ -62,6 +61,67 @@ func (s *Stack) Pop() (Node, error) {
 // Len returns the number of nodes in the stack
 func (s *Stack) Len() int {
 	return s.len
+}
+
+type queueItem struct {
+	data Node
+	next *queueItem
+}
+
+type Queue struct {
+	lock  *sync.Mutex
+	first *queueItem
+	last  *queueItem
+	len   int
+}
+
+func NewQueue() *Queue {
+	return &Queue{lock: &sync.Mutex{}}
+}
+
+func (q *Queue) Push(node Node) {
+	q.lock.Lock()
+	defer q.lock.Unlock()
+
+	q.len++
+	toPush := &queueItem{data: node}
+	if q.last == nil && q.first == nil {
+		q.last = toPush
+		q.first = toPush
+		return
+	}
+	q.last.next = toPush
+	q.last = toPush
+}
+
+func (q *Queue) Pop() (Node, error) {
+	q.lock.Lock()
+	defer q.lock.Unlock()
+
+	// no elements in the queue
+	if q.first == nil {
+		return "", errors.New("cannot pop from empty queue")
+	}
+	// one element in the queue
+	if q.first == q.last {
+		val := q.first.data
+		q.first = nil
+		q.last = nil
+		q.len = 0
+		return val, nil
+	}
+	// general case
+	curFirst := q.first
+	val := curFirst.data
+	q.first = curFirst.next
+	curFirst = nil // prevent memory grow (likely not needed due to GC)
+	q.len--
+
+	return val, nil
+}
+
+func (q *Queue) Len() int {
+	return q.len
 }
 
 // Set is an unordered unique collection of nodes

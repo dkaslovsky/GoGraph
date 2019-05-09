@@ -20,9 +20,9 @@ func setupStack() *Stack {
 
 func TestNewStack(t *testing.T) {
 	t.Run("new Stack is empty", func(t *testing.T) {
-		n := NewStack()
-		assert.Nil(t, n.last)
-		assert.Zero(t, n.len)
+		s := NewStack()
+		assert.Nil(t, s.last)
+		assert.Zero(t, s.len)
 	})
 }
 
@@ -83,6 +83,32 @@ func TestStackPop(t *testing.T) {
 			assert.Equal(t, test.stack.len, curStackLen-1)
 		})
 	}
+}
+
+func TestStackPopPush(t *testing.T) {
+	t.Run("popping until empty and then pushing", func(t *testing.T) {
+		s := setupStack()
+		// pop until empty
+		for s.Len() > 0 {
+			s.Pop()
+		}
+		assert.Zero(t, s.len)
+		assert.Nil(t, s.last)
+		// push on to newly empty stack
+		toPush := []Node{"a", "b"}
+		for _, n := range toPush {
+			s.Push(n)
+		}
+		assert.Equal(t, len(toPush), s.len)
+		assert.NotNil(t, s.last)
+		i := len(toPush) - 1
+		for s.last != nil {
+			n, err := s.Pop()
+			assert.Equal(t, toPush[i], n)
+			assert.Nil(t, err)
+			i--
+		}
+	})
 }
 
 func TestStackLen(t *testing.T) {
