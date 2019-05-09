@@ -5,18 +5,20 @@ import (
 	"sync"
 )
 
-// Node is a vertex of a graph
+// Node is a node of a graph
 type Node string
 
 // Stack is a LIFO of nodes
 type Stack struct {
 	nodes []Node
-	lock  sync.Mutex
+	lock  *sync.Mutex
 }
 
 // NewStack returns a pointer to an empty Stack
 func NewStack() *Stack {
-	return &Stack{}
+	return &Stack{
+		lock: &sync.Mutex{},
+	}
 }
 
 // Push adds a node to the stack
@@ -51,13 +53,14 @@ func (s *Stack) Len() int {
 // Set is an unordered unique collection of nodes
 type Set struct {
 	items map[Node]struct{}
-	lock  sync.Mutex
+	lock  *sync.Mutex
 }
 
 // NewSet returns a pointer to an empty Set
 func NewSet() *Set {
 	return &Set{
 		items: map[Node]struct{}{},
+		lock:  &sync.Mutex{},
 	}
 }
 

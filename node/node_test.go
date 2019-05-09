@@ -1,6 +1,7 @@
 package node
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,6 +10,7 @@ import (
 func setupStack() *Stack {
 	return &Stack{
 		nodes: []Node{"x", "y", "z"},
+		lock:  &sync.Mutex{},
 	}
 }
 
@@ -106,6 +108,7 @@ func setupSet() *Set {
 			"x": struct{}{},
 			"y": struct{}{},
 		},
+		lock: &sync.Mutex{},
 	}
 }
 
