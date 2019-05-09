@@ -8,16 +8,21 @@ import (
 )
 
 func setupStack() *Stack {
+	itemX := &stackItem{data: "x"}
+	itemY := &stackItem{data: "y", next: itemX}
+	itemZ := &stackItem{data: "z", next: itemY}
 	return &Stack{
-		nodes: []Node{"x", "y", "z"},
-		lock:  &sync.Mutex{},
+		lock: &sync.Mutex{},
+		top:  itemZ,
+		len:  3,
 	}
 }
 
 func TestNewStack(t *testing.T) {
 	t.Run("new Stack is empty", func(t *testing.T) {
 		n := NewStack()
-		assert.Empty(t, n.nodes)
+		assert.Nil(t, n.top)
+		assert.Zero(t, n.len)
 	})
 }
 
@@ -42,10 +47,10 @@ func TestStackPush(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			curStackLen := len(test.stack.nodes)
+			curStackLen := test.stack.len
 			test.stack.Push(test.toPush)
-			assert.Contains(t, test.stack.nodes, test.toPush)
-			assert.Equal(t, len(test.stack.nodes), curStackLen+1)
+			assert.Equal(t, test.stack.top.data, test.toPush)
+			assert.Equal(t, test.stack.len, curStackLen+1)
 		})
 	}
 }
@@ -67,7 +72,7 @@ func TestStackPop(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			curStackLen := len(test.stack.nodes)
+			curStackLen := test.stack.len
 			n, err := test.stack.Pop()
 			if test.shouldErr {
 				assert.NotNil(t, err)
@@ -75,7 +80,7 @@ func TestStackPop(t *testing.T) {
 			}
 			assert.Nil(t, err)
 			assert.Equal(t, n, Node("z"))
-			assert.Equal(t, len(test.stack.nodes), curStackLen-1)
+			assert.Equal(t, test.stack.len, curStackLen-1)
 		})
 	}
 }

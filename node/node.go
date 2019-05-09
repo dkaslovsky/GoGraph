@@ -8,52 +8,66 @@ import (
 // Node is a node of a graph
 type Node string
 
+type stackItem struct {
+	data Node
+	next *stackItem
+}
+
 // Stack is a LIFO of nodes
 type Stack struct {
-	nodes []Node
-	lock  *sync.Mutex
+	lock *sync.Mutex
+	top  *stackItem
+	len  int
 }
 
 // NewStack returns a pointer to an empty Stack
 func NewStack() *Stack {
-	return &Stack{
-		lock: &sync.Mutex{},
-	}
+	return &Stack{lock: &sync.Mutex{}}
 }
 
 // Push adds a node to the stack
-func (s *Stack) Push(n Node) {
+func (s *Stack) Push(node Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.nodes = append(s.nodes, n)
+	s.len++
+	toPush := &stackItem{data: node}
+	if s.top == nil {
+		s.top = toPush
+		return
+	}
+	toPush.next = s.top
+	s.top = toPush
 }
 
 // Pop removes and returns the most recently added node from the stack
-func (s *Stack) Pop() (n Node, err error) {
+func (s *Stack) Pop() (Node, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	sLen := len(s.nodes)
-	if sLen == 0 {
-		return n, errors.New("cannot pop from empty stack")
+	if s.top == nil {
+		return "", errors.New("cannot pop from empty stack")
 	}
 
-	n = s.nodes[sLen-1]
-	s.nodes[sLen-1] = "" // prevent memory grow
-	s.nodes = s.nodes[:sLen-1]
-	return n, nil
+	s.len--
+	curTop := s.top
+	val := curTop.data
+	s.top = curTop.next
+	// prevent memory grow (likely not needed due to GC)
+	curTop = nil
+
+	return val, nil
 }
 
 // Len returns the number of nodes in the stack
 func (s *Stack) Len() int {
-	return len(s.nodes)
+	return s.len
 }
 
 // Set is an unordered unique collection of nodes
 type Set struct {
-	items map[Node]struct{}
 	lock  *sync.Mutex
+	items map[Node]struct{}
 }
 
 // NewSet returns a pointer to an empty Set
