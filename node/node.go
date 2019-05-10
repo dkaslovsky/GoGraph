@@ -30,14 +30,14 @@ func (s *Stack) Push(node Node) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.len++
 	toPush := &stackItem{data: node}
 	if s.last == nil {
 		s.last = toPush
-		return
+	} else {
+		toPush.next = s.last
+		s.last = toPush
 	}
-	toPush.next = s.last
-	s.last = toPush
+	s.len++
 }
 
 // Pop removes and returns the most recently added node from the stack
@@ -50,11 +50,11 @@ func (s *Stack) Pop() (Node, error) {
 	}
 
 	curLast := s.last
-	val := curLast.data
 	s.last = curLast.next
-	curLast = nil // prevent memory grow (likely not needed due to GC)
 	s.len--
 
+	val := curLast.data
+	curLast = nil // prevent memory grow (likely not needed due to GC)
 	return val, nil
 }
 
@@ -89,15 +89,15 @@ func (q *Queue) Push(node Node) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
-	q.len++
 	toPush := &queueItem{data: node}
-	if q.last == nil && q.first == nil {
+	if q.last == nil {
 		q.last = toPush
 		q.first = toPush
-		return
+	} else {
+		q.last.next = toPush
+		q.last = toPush
 	}
-	q.last.next = toPush
-	q.last = toPush
+	q.len++
 }
 
 // Pop removes the first node in the queue
@@ -105,25 +105,19 @@ func (q *Queue) Pop() (Node, error) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 
-	// no elements in the queue
 	if q.first == nil {
 		return "", errors.New("cannot pop from empty queue")
 	}
-	// one element in the queue
-	if q.first == q.last {
-		val := q.first.data
-		q.first = nil
-		q.last = nil
-		q.len = 0
-		return val, nil
-	}
-	// general case
+
 	curFirst := q.first
-	val := curFirst.data
 	q.first = curFirst.next
-	curFirst = nil // prevent memory grow (likely not needed due to GC)
+	if q.first == nil {
+		q.last = nil
+	}
 	q.len--
 
+	val := curFirst.data
+	curFirst = nil // prevent memory grow (likely not needed due to GC)
 	return val, nil
 }
 
