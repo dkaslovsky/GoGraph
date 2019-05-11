@@ -16,10 +16,10 @@ func DFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
 		return []n.Node{}
 	}
 
+	visited := n.NewSet()
+
 	s := n.NewStack()
 	s.Push(node)
-
-	visited := n.NewSet()
 
 	for s.Len() > 0 {
 		curNode, _ := s.Pop() // no need to check error since the stack cannot be empty here
@@ -34,6 +34,35 @@ func DFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
 		}
 		for nbr := range nbrs {
 			s.Push(nbr)
+		}
+	}
+
+	return visited.ToSlice()
+}
+
+func BFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
+	if !g.HasNode(node) {
+		return []n.Node{}
+	}
+
+	visited := n.NewSet()
+
+	q := n.NewQueue()
+	q.Push(node)
+
+	for q.Len() > 0 {
+		curNode, _ := q.Pop() // no need to check error since the queue cannot be empty here
+		if visited.Contains(curNode) {
+			continue
+		}
+		visited.Add(curNode)
+
+		nbrs, ok := g.GetNeighbors(curNode)
+		if !ok {
+			continue
+		}
+		for nbr := range nbrs {
+			q.Push(nbr)
 		}
 	}
 
