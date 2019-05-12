@@ -40,6 +40,7 @@ func DFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
 	return visited.ToSlice()
 }
 
+// BFS performs a breadth first search starting at a specified node
 func BFS(g hasNodeNeighborGetter, node n.Node) []n.Node {
 	if !g.HasNode(node) {
 		return []n.Node{}
